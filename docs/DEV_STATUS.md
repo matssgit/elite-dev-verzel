@@ -119,12 +119,13 @@ Lote seed: /lotes/00000000-0000-4000-8000-000000000100. Lote criado/disputado no
 Nenhum bloqueio para o próximo marco local. Open Library teve instabilidade transitória resolvida na repetição e coberta por fallback. Instalação do plugin WS e acesso ao PostgreSQL aprovados sem rejeições. Infraestrutura pública/credenciais e eventual custo serão resolvidos no marco de deploy.
 # Sprint 4 — publicação em preparação (26/10/2026)
 
-Este bloco prevalece sobre os registros históricos abaixo. Aplicação ainda sem URLs públicas; nenhuma validação de produção concluída. Nenhum recurso pago criado/autorizado. Repositório dedicado confirmado público e acessível: https://github.com/matssgit/elite-dev-verzel .
+Este bloco prevalece sobre os registros históricos abaixo. Aplicação ainda sem URLs públicas; nenhuma validação de produção concluída. Nenhum recurso pago criado/autorizado. Código publicado: https://github.com/matssgit/elite-dev-verzel (push inicial b42bd18). Revisão dos 61 arquivos não encontrou tokens/chaves privadas; caminhos sensíveis ignorados e não rastreados. Projeto Vercel Hobby criado após autorização da conexão, ainda sem deployment; painel https://vercel.com/zmats-projects/elite-dev-verzel .
 
 - Preparados vercel.json (Vite/SPA/headers), validação obrigatória de VITE_API_URL HTTPS, entradas compiladas de migrations/seed/verificação do storage e inicialização Render com verificação de mount real. Segredos ficam fora do Git; chave pública local está explicitamente identificada como desenvolvimento.
 - Proposta paga removida da descoberta automática e arquivada em deploy/render.paid.yaml após recusa do responsável. Não aplicar. Não há adaptador remoto de checkpoints nem função agendada implantados. Comparação e recomendação em INFRA_OPTIONS.md.
 - TypeScript, lint e build aprovados durante a preparação; testes direcionados de liquidação/auditoria 12/12 aprovados. Volume Docker exclusivo provou preservação de checkpoint/fingerprint entre contêineres, permissão 0600 e recusa sem mount ou após perda da chave. Não equivalem a reiniciar/redeployar na Render.
-- Produção pendente: escolher infraestrutura compatível, autorizar conexão Vercel à equipe, configurar provedores/segredos, aplicar migrations/seed e executar os fluxos públicos, incluindo suspensão/reinicialização/redeploy e isolamento de credenciais SQL. Documentação em DEPLOY.md e AUDIT.md. Não reutilizar infraestrutura de outros projetos.
+- Primeiro CI público aprovado no commit b42bd18: instalação limpa, PostgreSQL 17, migrations, TypeScript, lint, npm test e build. Evidência: https://github.com/matssgit/elite-dev-verzel/actions/runs/40364745794 . Teste de CI não é prova de funcionamento dos serviços de produção.
+- Produção pendente: escolher infraestrutura compatível, configurar provedores/segredos, revisar proteção de acesso do frontend, aplicar migrations/seed e executar os fluxos públicos, incluindo suspensão/reinicialização/redeploy e isolamento de credenciais SQL. Documentação em DEPLOY.md e AUDIT.md. Não reutilizar infraestrutura de outros projetos.
 
 ---
 

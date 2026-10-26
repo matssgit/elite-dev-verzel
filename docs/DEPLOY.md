@@ -1,6 +1,8 @@
 # Deploy — Sprint 4
 
-Estado em 26/10/2026: **preparado localmente; nenhuma aplicação deste projeto publicada**. Repositório público confirmado acessível pelo Git e conector: https://github.com/matssgit/elite-dev-verzel ; origin configurado. Workspace Render confirmado pelo responsável: My Workspace. Vercel respondeu 403 para a equipe zmats-projects e exige autorização da conexão. Não reutilizar serviços/bancos de outros projetos.
+Estado em 26/10/2026: **código publicado; nenhuma aplicação deste projeto publicada**. Repositório público: https://github.com/matssgit/elite-dev-verzel ; primeiro push confirmado (b42bd18). Revisados 61 arquivos: nenhum token/chave privada encontrado; .env, var, tmp, dependências e artefatos locais excluídos. Workspace Render confirmado: My Workspace. Acesso Vercel autorizado pelo responsável e projeto Hobby criado na equipe zmats-projects, sem deployment nem recursos pagos. Não reutilizar serviços/bancos de outros projetos.
+
+Vercel: projeto `prj_szjw8K9BQ7T9WAJQpLD28VnhcAeZ`, Node 24.x, Vite, raiz do monorepo, saída apps/web/dist. Painel: https://vercel.com/zmats-projects/elite-dev-verzel . A criação não publicou uma aplicação. Git ainda não vinculado para evitar build automático sem API configurada. Proteção padrão retornada: all_except_custom_domains; revisar para permitir acesso público ao deployment de produção antes da validação. Não publicar apontando para uma API fictícia.
 
 ## Decisão atual
 
@@ -41,8 +43,8 @@ Render documenta persistência entre deploys/restarts e disco disponível só no
 
 ## Passos externos restantes
 
-1. Autorizar acesso da conexão Vercel à equipe zmats-projects pelo link temporário fornecido no chat. Não enviar token pela conversa.
-2. Publicar código revisado no repositório dedicado já confirmado. Não publicar .env, var, node_modules, tmp, .vercel nem PDF do edital.
+1. Acesso Vercel autorizado e projeto criado. Configurar backend após a decisão de infraestrutura, sem enviar tokens pela conversa.
+2. Código revisado publicado no repositório dedicado. Não publicar .env, var, node_modules, tmp, .vercel nem PDF do edital.
 3. Escolher arquitetura após ler INFRA_OPTIONS.md. Recursos pagos já foram recusados; não aplicar Blueprint nem criar serviços/banco/disco pagos.
 4. Publicar o commit revisado no repositório dedicado e criar projeto Vercel **na raiz do monorepo**. Configurar Node 24.x. Reservar e confirmar o domínio canônico real antes de configurar WEB_ORIGIN; nomes/URLs não são garantidos enquanto não criados.
 5. Aplicar `deploy/render.paid.yaml` pelo Blueprint Dashboard, já sincronizado no repositório. O MCP da Render cria API/DB, mas não anexa discos nem cria Blueprint; não usar criação incompleta sem disco. Se for necessário acesso Git OAuth, concluir no Dashboard.
@@ -74,3 +76,5 @@ Não criar recursos duplicados entre MCP e Blueprint. Configurações do Bluepri
 ## URLs públicas
 
 Nenhuma URL pública deste projeto disponível ainda. Não substituir por links locais, por nomes propostos ou por serviços de outro projeto. Preencher esta seção somente depois de publicar e verificar.
+
+Código e CI são públicos: https://github.com/matssgit/elite-dev-verzel ; primeiro CI aprovado em https://github.com/matssgit/elite-dev-verzel/actions/runs/40364745794 (migrations, TypeScript, lint, testes e build). Ainda não há URL da aplicação/API.
