@@ -94,3 +94,11 @@ Movimentações da carteira agora incluem DEPOSIT (positivo), PURCHASE (negativo
 Criação/cancelamento/lance só devolvem sucesso após publicar checkpoints daquele lote. 503 CHECKPOINT_PENDING após commit informa operação registrada e publicação pendente: consultar lote e repetir lances apenas com a mesma chave. 409 AUDIT_CORRUPTED bloqueia operação se histórico/checkpoint divergir; 409 SETTLEMENT_INCONSISTENT bloqueia liquidação quando saldo/reserva/vencedor diverge. Worker registra falha e tenta novamente em ciclos futuros; não corrige saldos silenciosamente. 404 RECEIPT_NOT_FOUND para comprovante inexistente.
 
 Auditoria INTEGRO é condicional ao modelo banco comprometido/chave e arquivos preservados. Controle de acesso e durabilidade desses arquivos ainda precisam de validação em produção; R17 não é plenamente validado. Ver limitações, janela antes de ancoragem e referência pública em AUDIT.md.
+
+## Verificação operacional durante manutenção
+
+Na função Neon `settlement`, GET `/rotation-readiness` responde 404 quando `FINANCIAL_MAINTENANCE` não é `true`. Durante manutenção, verifica conexão PostgreSQL e invariantes financeiras em transação READ ONLY, encerrada com ROLLBACK; compara a identidade de assinatura com o pin e a chave pública remota. Não executa liquidação nem publica checkpoints financeiros.
+
+O deploy exige `ROTATION_SESSION_CUTOFF` (instante público da configuração nova) para contar conexões do mesmo papel anteriores a esse instante. `ROTATION_PROBE_ID` opcional, definido pelo operador no deploy, permite escrever/ler uma prova fixa em `rotation-probes/`, fora do namespace de checkpoints, sem sobrescrita ou conteúdo fornecido pelo cliente. Valores protegidos continuam somente no ambiente do runtime.
+
+Sucesso 200: `{ok,maintenance,database,financialInvariants,pendingSettlements,settledAuctions,preRotationConnections,migrations,blobRead,blobWriteProbe,fingerprint,automaticSettlementExecuted:false}`. Falha 503: `{ok:false,stage}` sem erros internos ou credenciais. Os contadores e a fingerprint são públicos; esta verificação não comprova revogação por autenticação com a credencial antiga nem execução automática pós-rotação.

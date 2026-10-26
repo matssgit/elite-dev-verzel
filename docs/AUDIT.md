@@ -1,6 +1,6 @@
 # Auditoria: algoritmo, confiança e limites
 
-**Sprint 5 — rotação pendente:** a chave privada e o token anteriores são tratados como potencialmente comprometidos. A verificação matemática dos registros existentes continua disponível; isso não comprova que uma chave exposta permaneceu sob controle exclusivo. Não houve rotação, exclusão/reassinatura de eventos nem troca silenciosa do pin. Procedimento e confirmação em [SECURITY_ROTATION.md](SECURITY_ROTATION.md).
+**Sprint 5 — assinatura ainda pendente:** SQL/Blob foram substituídos pelo operador; a função comprovou leitura/escrita no store e a API leu os históricos com o ambiente atualizado. Os 14 checkpoints dos cinco lotes permanecem idênticos e verificáveis. A chave privada anterior continua potencialmente comprometida: isso impede declarar autoria legítima apenas pela assinatura. Não houve troca de chave/pin, exclusão ou reassinatura de eventos. Procedimento/evidências em [SECURITY_ROTATION.md](SECURITY_ROTATION.md).
 
 ## Modelo de ameaça
 

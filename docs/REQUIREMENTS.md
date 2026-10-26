@@ -1,6 +1,6 @@
 # Matriz de requisitos
 
-Sprint 5: aplicação publicada nos serviços gratuitos, com liquidação Neon independente e checkpoints Blob. Persistência após redeploy e retomada do lote controlado confirmadas; **suspensão física histórica inconclusiva**, sem repetição. Credenciais anteriores potencialmente comprometidas: fase 1 SQL/Blob autorizada, mas bloqueada pelo transporte de segredos; configuração direta nos painéis ainda necessária. Manutenção retirada e cron reativado, sem troca de credenciais. Transição criptográfica da fase 2 ainda não implementada. Validações funcionais abaixo não equivalem a segurança operacional plena. Evidências em DEV_STATUS/DEPLOY e plano em SECURITY_ROTATION. Nenhum recurso pago autorizado.
+Sprint 5: SQL/Blob substituídos pelo operador; API/função conectam com ambiente atualizado, leitura/escrita Blob e invariantes financeiras verificadas. Cinco auditorias/14 checkpoints e três comprovantes preservados. Manutenção ativa e cron pausado; liquidação financeira pós-rotação não executada. Transição da chave potencialmente comprometida ainda pendente. Persistência após redeploy confirmada; **suspensão física histórica inconclusiva**. Validações funcionais abaixo não equivalem a segurança operacional plena. Evidências em DEV_STATUS/DEPLOY/SECURITY_ROTATION. Nenhum recurso pago autorizado.
 
 Fonte: `Teste tecnico Elite Dev - Verzel.pdf`, 7 páginas, lidas visualmente na íntegra em 26/10/2026 (o documento contém imagens, sem camada textual útil).
 

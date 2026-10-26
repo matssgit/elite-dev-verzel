@@ -6,7 +6,7 @@ Casa de leilões online do desafio técnico Verzel. **Etapa atual: Sprint 5 — 
 
 Opção gratuita aprovada: Vercel Hobby, Render Free, Neon Free, Blob privado e função Neon agendada por minuto. A API pode levar aproximadamente um minuto para reativar após ociosidade; a liquidação executa diretamente no Neon, independentemente do processo da API. Checkpoints ficam fora do PostgreSQL; chave estável em variáveis protegidas. Storage não é WORM: acesso à chave/token/contas administrativas está fora da proteção contra adulteração apenas do banco. Evidências e limites em [DEPLOY](docs/DEPLOY.md) e [AUDIT](docs/AUDIT.md). Recursos pagos continuam não autorizados; não aplicar `deploy/render.paid.yaml`.
 
-**Segurança pendente:** por suspeita de exposição em registros de ferramentas, as credenciais anteriores precisam de rotação. Não foram encontradas no histórico Git revisado. SQL/Blob já têm autorização de troca, mas a execução depende dos painéis protegidos após rejeição do transporte via terminal. A transição da chave de auditoria permanece separada e deve preservar assinaturas antigas; INTEGRO não elimina o risco de chave comprometida. Plano em [SECURITY_ROTATION](docs/SECURITY_ROTATION.md). Ambiente somente de demonstração, com valores simulados.
+**Estado de segurança e operação:** SQL/Blob foram substituídos manualmente e os consumidores verificados. Manutenção financeira permanece ativa e cron pausado até o ensaio pós-rotação. A chave de assinatura anterior continua potencialmente comprometida; sua transição é separada e deve preservar assinaturas antigas. INTEGRO não elimina esse risco. Evidências e limitações em [SECURITY_ROTATION](docs/SECURITY_ROTATION.md). Ambiente somente de demonstração, com valores simulados.
 
 ## Stack e organização
 

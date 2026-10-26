@@ -1,15 +1,15 @@
 # Rotação de credenciais — Sprint 5
 
-**Janela atual aberta em 26/10 às 19:22:** painéis prontos, manutenção confirmada na API e função, trigger desativado. Aguardando o operador executar os passos manuais abaixo. Nenhuma credencial foi alterada automaticamente; cinco auditorias preservadas antes da troca em tmp/rotation-window-baseline.json. A retirada de manutenção descrita na tentativa anterior não representa o estado desta nova janela.
+**Estado atual, 26/10 às 20:48:** operador concluiu troca SQL/Blob e atualização dos consumidores. Manutenção continua ativa e trigger desativado, por instrução expressa. Cinco auditorias/14 checkpoints idênticos ao baseline; verificação da função confirmou PostgreSQL, invariantes e leitura/escrita Blob fora do namespace de auditoria. Falta o ensaio financeiro pós-rotação e a fase 2 de assinatura. As tentativas anteriores abaixo são históricas.
 
-Estado em 26/10/2026: **fase 1 autorizada pelo responsável; nenhuma das três credenciais foi rotacionada**. A revisão automática rejeitou o transporte por stdin do terminal antes da troca. O cron foi reativado e a manutenção retirada; não manter indisponibilidade enquanto falta o caminho protegido. Por determinação do responsável, as credenciais anteriores são potencialmente comprometidas. Não imprimir valores nem enviá-los em argumentos/entrada de terminal. A busca no histórico Git não elimina exposição em registros externos.
+**SQL e Blob rotacionados manualmente; assinatura ainda não rotacionada.** A rejeição anterior de stdin levou ao handoff nativo, sem valores novos na conversa/terminal do agente. O operador confirmou expiração imediata do token Blob antigo. Não foi feito teste de autenticação com os valores antigos; registrar essa limitação. A busca no histórico Git não elimina exposição anterior em registros externos.
 
 ## Recursos e consumidores
 
 | Credencial | Recurso | Consumidores | Estado |
 |---|---|---|---|
-| Senha SQL | Neon cold-haze-51518470, branch production, papel elite_verzel_owner | API, migrations/seed, função settlement | Autorizada; pendente de configuração direta nos painéis |
-| Token Blob | store_jAwONeQLbcJmOzGK, prefixo elite-v1/ | API e função; conexão do projeto Vercel | Autorizada; rotação disponível no painel, ainda não executada |
+| Senha SQL | Neon cold-haze-51518470, branch production, papel elite_verzel_owner | API, migrations/seed, função settlement | Operador redefiniu; API reiniciada e função conectam; zero conexões anteriores à configuração nova observadas |
+| Token Blob | store_jAwONeQLbcJmOzGK, prefixo elite-v1/ | API e função; conexão do projeto Vercel | Operador substituiu; leitura/escrita verificadas; expiração imediata antiga informada, sem teste com token anterior |
 | Chave de assinatura | identidade pública em AUDIT_PRODUCTION_PUBLIC_KEY.pem | API, função, verificador e páginas públicas | Transição entre chaves ainda não implementada; troca direta proibida |
 
 ## Fase 1 — SQL e Blob (janela curta, confirmação obrigatória)
@@ -22,7 +22,7 @@ Estado em 26/10/2026: **fase 1 autorizada pelo responsável; nenhuma das três c
 6. Redeployar os consumidores com os valores novos, sem eco/arquivo em texto puro/argumentos de shell. Validar autenticação SQL, leitura de checkpoints antigos e escrita de uma prova identificada em prefixo de validação. Confirmar que as credenciais antigas foram recusadas por testes de leitura/autenticação, sem tentar alterar objetos.
 7. Reativar agendamento/escritas e validar login, sala/WS, um lote controlado, liquidação única e comprovante. Não declarar a rotação concluída apenas porque um painel salvou as variáveis. Se houver falha, manter manutenção; não restaurar uma credencial exposta como solução definitiva.
 
-O reset/revogação pode interromper API/cron. **Nenhuma dessas operações foi executada.** A confirmação da fase 1 já foi recebida; não pedir outra autorização para o mesmo escopo. A fase 2 continua separada.
+O reset/revogação pode interromper API/cron. A fase 1 foi autorizada e a troca SQL/Blob foi executada manualmente pelo operador; os resultados atuais estão ao final. Manutenção e cron continuam bloqueados por instrução posterior do usuário. A fase 2 continua separada.
 
 ### Tentativa autorizada e bloqueio
 
@@ -41,7 +41,7 @@ Alternativa: geração nos painéis e inserção humana nos campos protegidos. *
 7. Esse script atualiza apenas DATABASE_URL, DATABASE_URL_UNPOOLED, BLOB_READ_WRITE_TOKEN e a manutenção da função. Os campos da chave de assinatura são OMITIDOS, preservando os valores existentes conforme contrato do SDK Neon. Não pede nem troca a chave privada. A configuração de entrada é deploy/neon-credentials.ts; nenhum banco/store/plano novo é declarado. Usa o perfil Neon elite-verzel já autenticado no cofre Windows e --no-env-pull.
 8. Informar ao agente somente que a configuração terminou. O agente valida leituras/assinaturas e consumidores, retira manutenção e reativa cron quando estiver consistente. Falha mantém manutenção e não autoriza restaurar credenciais expostas. A verificação de revogação efetiva e de conexões SQL antigas ainda precisa ser concluída para fechar a fase.
 
-Validação do handoff: sintaxe PowerShell e lint conferidos; o script NÃO foi executado com segredos nem testado contra produção. O uso manual nativo evita transmitir os valores pelo terminal externo do agente; não protege contra comprometimento do computador do operador. O helper legado with-secret-env.mjs continua desativado.
+Validação do handoff: sintaxe PowerShell e lint conferidos; o operador confirmou execução nativa bem-sucedida contra produção, e os consumidores foram verificados posteriormente. O agente não executou o script com segredos. O uso manual nativo evita transmitir os valores pelo terminal externo do agente; não protege contra comprometimento do computador do operador. O helper legado with-secret-env.mjs continua desativado.
 
 ## Fase 2 — assinatura (implementação/testes e confirmação separados)
 
@@ -62,6 +62,16 @@ Teste interrompido retomado somente com leituras: lote 8e1b798d-0654-4f4e-b514-9
 
 Render não forneceu evento de suspensão nem série de instance_count no intervalo; ausência de métricas não significa zero instâncias. **Teste de suspensão física inconclusivo**, sem repetição. A liquidação independente foi confirmada com RUN_SETTLEMENT_JOBS=false.
 
-Para fechar rotação: registrar confirmação do responsável, horário, consumidores atualizados, credenciais antigas recusadas, histórico preservado e fluxo novo validado. Não incluir valores de segredos na evidência. Até lá, a entrega permanece com risco de credenciais potencialmente expostas.
+## Resultado das verificações após o handoff
+
+- Operador confirmou conclusão e expiração imediata das credenciais Blob antigas. Nenhum valor novo foi solicitado/exibido pelo agente.
+- API redeployada em dep-dbfu7q0m7kps73aq84mg para carregar o ambiente atualizado; HTTP 200 em /health, 503 MAINTENANCE nas quatro rotas financeiras, login e permissões corretos, WS reconecta. Sessão criada só para o teste foi encerrada.
+- Função manteve os campos de assinatura existentes e recebeu explicitamente DATABASE_URL/DATABASE_URL_UNPOOLED e o token. Verificação durante manutenção: PostgreSQL conecta, três migrations, quatro lotes já liquidados com invariantes corretas, um pendente e zero conexões do papel anteriores a 23:32:02 UTC (configuração manual nova). Isso não é teste de autenticação com a senha antiga.
+- Blob: pin público confere com a chave configurada; prova pequena escrita/lida por uma credencial nova no runtime da função, no prefixo rotation-probes/, sem tocar eventos/checkpoints. Não é uma nova âncora financeira nem WORM. Endpoint de verificação só opera em manutenção, com alvo de escrita fixado por variável pública no deploy.
+- Cinco auditorias e 14 eventos/checkpoints idênticos, assinaturas conferidas pelo CLI independente. Três comprovantes HTTP 200 e valores preservados. Não houve débito/crédito ou liquidação nesta validação.
+- Cron continua disabled. A liquidação legítima de R$50 do lote original 00000000-0000-4000-8000-000000000100 venceu durante a manutenção e permanece pendente. Reservas correspondem aos lotes não liquidados, inclusive vencidos. Os 12 testes locais de liquidação passaram, mas NÃO substituem execução financeira pós-rotação em produção.
+- Os handles antigos de credenciais mantidos pelo orquestrador foram descartados da memória de trabalho; isso não apaga eventuais registros históricos nem revoga acessos por si só.
+
+Não há atestado de segurança plena: chave privada anterior ainda requer a fase 2. Para comprovar execução automática pós-rotação será necessária uma execução controlada do worker, mantendo lances/depósitos bloqueados, e conferência posterior de débito/crédito/comprovante únicos. Essa execução não foi iniciada, pois o usuário pediu cron pausado e manutenção ativa até o relatório.
 
 Fontes: [Neon: rotação da conexão](https://neon.com/faqs/rotate-database-url-connection-string), [Neon: papéis e privilégios](https://neon.com/docs/manage/roles), [Vercel: credenciais Blob e revogação no Dashboard](https://vercel.com/changelog/vercel-private-blob-is-now-generally-available). OIDC automático da Vercel não deve ser presumido disponível na Render/Neon; mantêm-se consumidores externos.

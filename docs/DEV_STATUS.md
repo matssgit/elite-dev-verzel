@@ -1,6 +1,6 @@
 # Status DEV — Sprint 5 — 26/10/2026
 
-**Janela manual atual, 26/10 às 19:22 (America/Sao_Paulo): manutenção ATIVA na API e na função, trigger PAUSADO, usuário com painéis prontos.** API c9520ff (dep-dbft4g942hec73dgokn0) confirmou 503 MAINTENANCE antes da entrada financeira. Função deployment 4 preservou todos os nomes de variáveis anteriores. Cinco auditorias capturadas em tmp/rotation-window-baseline.json. Credenciais ainda não trocadas pelo agente; aguardando inserção manual e confirmação do operador. Não reabrir operações antes da verificação. As notas de restabelecimento às 18:59 abaixo pertencem à tentativa anterior.
+**Estado pós-rotação, 26/10 às 20:48 (America/Sao_Paulo): manutenção ATIVA na API/função e trigger PAUSADO.** Operador confirmou troca SQL/Blob e executou o handoff nativo. Função deployment 5 concluído; API reiniciada em dep-dbfu7q0m7kps73aq84mg (live). Cinco auditorias e seus 14 checkpoints permanecem idênticos ao baseline anterior. Função com verificação isolada em 19398e8 confirmou conexão, três migrations, reservas/liquidações gravadas consistentes, zero conexões SQL anteriores à configuração nova e leitura/escrita Blob em namespace de prova. Há UMA liquidação pendente; ela NÃO foi executada após a rotação, respeitando o bloqueio. Não reabrir automaticamente. As notas de tentativas anteriores abaixo são históricas.
 
 ## Estado atual
 
@@ -10,7 +10,7 @@ Código: https://github.com/matssgit/elite-dev-verzel .
 
 Vercel Hobby, Render Free, Neon Free e Blob privado. Nenhum recurso pago autorizado/criado. Fonte de configuração e limitações: DEPLOY.md. QA independente permanece sob coordenação do responsável; QA_REPORT.md não foi alterado e nenhum subagente/conversa de QA foi acionado.
 
-**Prioridade de segurança:** as três credenciais anteriores são potencialmente comprometidas. Fase 1 (SQL/Blob) expressamente autorizada; nenhuma rotação concluída. O envio por stdin foi rejeitado pela revisão automática; a alternativa é configuração direta nos painéis protegidos. A fase 2 (assinatura) continua separada, sem autorização de corte e sem suporte a múltiplas chaves implementado. Plano em SECURITY_ROTATION.md.
+**Prioridade de segurança:** SQL/Blob substituídos pelo operador, com novos consumidores verificados. Expiração imediata do token antigo confirmada pelo operador; não houve tentativa de autenticação com credenciais antigas. A chave de assinatura anterior continua potencialmente comprometida. Fase 2 separada, sem autorização de corte e sem suporte a múltiplas chaves implementado. Plano/evidências em SECURITY_ROTATION.md.
 
 ## Funcionalidades preservadas
 
@@ -44,6 +44,11 @@ Provas da Sprint 4 preservadas: corrida no mesmo lote e entre lotes, liberação
 
 ## Verificações e Git
 
+- Pós-rotação: comparação byte a byte dos eventos/checkpoints de cinco lotes (14 entradas); verificador independente aprovou cada histórico. Login/CORS/permissões, quatro rotas financeiras retornando 503 MAINTENANCE, reconexão WS e três comprovantes de R$11/R$70/R$10 aprovados. Sessão de teste encerrada. Nenhum lance/depósito/liquidação criado.
+- /rotation-readiness da função usa transação READ ONLY seguida de ROLLBACK para consultar invariantes. Um objeto pequeno de prova é gravado em rotation-probes/, fora de elite-v1/checkpoints, com ID fixado no deploy, sem conteúdo controlado pelo cliente e sem sobrescrita. Endpoint indisponível quando manutenção=false. Não reativa cron nem executa processDue/settleAuction. Novas credenciais não foram lidas/transmitidas pelas ferramentas do agente.
+- Verificação da função: HTTP 200, settledAuctions=4, pendingSettlements=1, preRotationConnections=0, migrations=3, blobRead/blobWriteProbe=true, automaticSettlementExecuted=false. Fingerprint preservada. Logs/retornos não incluem segredo.
+- 18 testes direcionados aprovados nesta etapa: 4 de prontidão, 2 da manutenção da função e 12 de liquidação/auditoria local isolada. TypeScript/lint/build API aprovados. CI 19398e8 aprovado: https://github.com/matssgit/elite-dev-verzel/actions/runs/40421738835 . Evidências em tmp/rotation-after-audits.json, rotation-readiness-result.json e rotation-functional-checks.json; não versionadas.
+
 - Estado inicial: main limpa, alinhada a origin/main, d26e208cdbd3b5a5066dd0746f9eca6bef6ed027.
 - Revisão local dos cinco commits/70 caminhos: nenhum padrão de token/chave privada nem caminho sensível encontrado. .env/var/tmp/node_modules/.vercel ignorados. Essa busca não certifica ausência de exposição em logs externos.
 - CI do commit implantado aprovado: https://github.com/matssgit/elite-dev-verzel/actions/runs/40370057271 .
@@ -52,7 +57,7 @@ Provas da Sprint 4 preservadas: corrida no mesmo lote e entre lotes, liberação
 
 ## Pendências e bloqueios
 
-1. Fase 1 já autorizada, bloqueada pelo transporte de segredos. Responsável precisa executar geração/troca diretamente nos painéis protegidos, em nova janela coordenada. Não pedir nova aprovação do mesmo escopo. Verificar consumidores e revogação real antes de fechar a fase.
+1. Configuração SQL/Blob concluída pelo operador e consumidores funcionando. Credenciais antigas não foram testadas diretamente; expiração imediata Blob foi informada pelo operador. Ensaio de liquidação financeira pós-rotação ainda não executado: o usuário mantém manutenção ativa e cron pausado. Uma liquidação legítima de R$50 aguarda o worker. Novo ensaio precisa respeitar essa instrução; não liberar o cron silenciosamente.
 2. Implementação/testes da transição criptográfica e confirmação separada antes de trocar a identidade de produção. Não há restauração de autenticidade retroativa de uma chave comprometida.
 3. Suspensão física histórica classificada como inconclusiva; liquidação independente confirmada.
 4. Franquias gratuitas, cold start e indisponibilidade eventual; manter sem upgrade e sem forma de pagamento Render. Não prometer disponibilidade gratuita indefinida.
