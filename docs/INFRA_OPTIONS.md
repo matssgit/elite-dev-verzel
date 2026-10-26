@@ -1,6 +1,6 @@
 # Infraestrutura: decisão de custo — 26/10/2026
 
-Nenhum recurso pago autorizado. Comparação documental, sem migração do armazenamento atual. Valores em USD, antes de impostos; conferir cotas da conta antes de provisionar. Nenhuma das condições de produção abaixo foi validada em um deploy deste projeto.
+**Decisão posterior: opção 1 aprovada pelo responsável e implantada em 26/10/2026.** Nenhum recurso pago autorizado. Evidências atuais em DEPLOY.md; o restante deste documento preserva a análise anterior à implementação. Não interpretar pendências históricas abaixo como estado atual.
 
 ## Opção 1 — demonstração gratuita por prazo curto
 

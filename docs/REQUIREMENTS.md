@@ -1,6 +1,6 @@
 # Matriz de requisitos
 
-Sprint 4: preparação de publicação implementada, operação pública ainda **pendente de validação**. Comparação de custos/limitações em INFRA_OPTIONS.md. Render Free com arquivos locais e apenas worker interno é incompatível com durabilidade dos checkpoints e execução durante suspensão. Nenhum requisito financeiro ou de auditoria foi relaxado; nenhuma alternativa gratuita foi aplicada. Recursos pagos recusados, Blueprint arquivado. Evidências locais de persistência em Docker não são evidências de produção.
+Sprint 4: opção gratuita aprovada e publicada em Vercel Hobby/Render Free/Neon Free. Checkpoints no Blob privado e liquidação por Function Trigger Neon independente, preservando transações/bloqueios existentes. Validação pública de login, catálogo, vitrine, WebSocket, concorrência financeira, liquidação, comprovantes e assinaturas executada em contas/lotes descartáveis. Persistência após redeploy e execução com API fisicamente suspensa ainda em verificação; evidências em DEV_STATUS/DEPLOY. Recursos pagos não autorizados. Não há garantia WORM contra administrador da aplicação/storage.
 
 Fonte: `Teste tecnico Elite Dev - Verzel.pdf`, 7 páginas, lidas visualmente na íntegra em 26/10/2026 (o documento contém imagens, sem camada textual útil).
 

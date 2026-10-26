@@ -1,8 +1,10 @@
 # Elite Dev Verzel
 
-Casa de leilões online do desafio técnico Verzel. **Etapa atual: Sprint 4 — preparação de deploy.** Fluxo de leilões com catálogo/snapshots, lances concorrentes, carteira, anti-sniping, WebSocket, encerramento/liquidação automática, resultados, comprovantes compartilháveis e auditoria pública assinada implementados. A proteção da âncora foi testada localmente; isolamento e durabilidade de produção ainda precisam de implantação/validação. Não há aplicação publicada.
+Casa de leilões online do desafio técnico Verzel. **Etapa atual: Sprint 4 — demonstração publicada.** Fluxo de leilões com catálogo/snapshots, lances concorrentes, carteira, anti-sniping, WebSocket, encerramento/liquidação automática, resultados, comprovantes compartilháveis e auditoria pública assinada implementados.
 
-Código público: https://github.com/matssgit/elite-dev-verzel . Preparação e verificações em [DEPLOY](docs/DEPLOY.md); comparação de até duas opções e restrições de gratuidade em [INFRA_OPTIONS](docs/INFRA_OPTIONS.md). Recursos pagos não autorizados. `deploy/render.paid.yaml` é apenas proposta arquivada: não aplicar. Vercel Free/Render Free não substituem automaticamente o ambiente atual: checkpoints locais seriam perdidos e o worker pararia com a suspensão da API.
+**Aplicação:** https://elite-dev-verzel-zmats-projects.vercel.app · **API:** https://elite-dev-verzel-api.onrender.com/health · **Código:** https://github.com/matssgit/elite-dev-verzel . Contas de demonstração abaixo usam valores simulados, sem pagamentos reais.
+
+Opção gratuita aprovada: Vercel Hobby, Render Free, Neon Free, Blob privado e função Neon agendada por minuto. A API pode levar aproximadamente um minuto para reativar após ociosidade; a liquidação executa diretamente no Neon, independentemente do processo da API. Checkpoints ficam fora do PostgreSQL; chave estável em variáveis protegidas. Storage não é WORM: acesso à chave/token/contas administrativas está fora da proteção contra adulteração apenas do banco. Evidências e limites em [DEPLOY](docs/DEPLOY.md) e [AUDIT](docs/AUDIT.md). Recursos pagos continuam não autorizados; não aplicar `deploy/render.paid.yaml`.
 
 ## Stack e organização
 

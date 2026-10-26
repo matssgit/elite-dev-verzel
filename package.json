@@ -18,6 +18,7 @@
     "db:migrate": "npm run db:migrate -w @elite/api",
     "db:seed": "npm run db:seed -w @elite/api"
   },
+  "overrides": {"@vercel/cli-config":{"zod":"^4.6.7"}},
   "devDependencies": {
     "@eslint/js": "^9.39.0",
     "@neon/config": "^1.9.4",

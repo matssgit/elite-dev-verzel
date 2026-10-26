@@ -1,80 +1,54 @@
-# Deploy — Sprint 4
+# Deploy — Sprint 4, opção gratuita aprovada
 
-Estado em 26/10/2026: **código publicado; nenhuma aplicação deste projeto publicada**. Repositório público: https://github.com/matssgit/elite-dev-verzel ; primeiro push confirmado (b42bd18). Revisados 61 arquivos: nenhum token/chave privada encontrado; .env, var, tmp, dependências e artefatos locais excluídos. Workspace Render confirmado: My Workspace. Acesso Vercel autorizado pelo responsável e projeto Hobby criado na equipe zmats-projects, sem deployment nem recursos pagos. Não reutilizar serviços/bancos de outros projetos.
+Aplicação: https://elite-dev-verzel-zmats-projects.vercel.app
+API/health: https://elite-dev-verzel-api.onrender.com/health
+Código: https://github.com/matssgit/elite-dev-verzel
+Comprovante de validação: https://elite-dev-verzel-zmats-projects.vercel.app/comprovantes/b4cca429-9a44-4a70-afee-1c796cdbac9f
+Auditoria de validação: https://elite-dev-verzel-zmats-projects.vercel.app/auditoria/30ae384d-0b99-4430-8dca-131f51e7bd41
 
-Vercel: projeto `prj_szjw8K9BQ7T9WAJQpLD28VnhcAeZ`, Node 24.x, Vite, raiz do monorepo, saída apps/web/dist. Painel: https://vercel.com/zmats-projects/elite-dev-verzel . A criação não publicou uma aplicação. Git ainda não vinculado para evitar build automático sem API configurada. Proteção padrão retornada: all_except_custom_domains; revisar para permitir acesso público ao deployment de produção antes da validação. Não publicar apontando para uma API fictícia.
+## Serviços efetivamente criados
 
-## Decisão atual
-
-O responsável **recusou os recursos pagos**. Proposta arquivada em deploy/render.paid.yaml e removida do caminho padrão de descoberta. Nenhum recurso pago será criado. Comparação gratuita/mínima concluída em [INFRA_OPTIONS.md](INFRA_OPTIONS.md); não substituir o storage funcional antes da escolha. Os passos pagos abaixo são somente referência histórica da proposta recusada.
-
-## Configuração preparada (proposta paga arquivada)
-
-- `vercel.json`: projeto Vite na raiz do monorepo, `npm ci --include=dev`, build somente web, saída `apps/web/dist`, rotas SPA para links de sala/comprovante/auditoria e headers de segurança.
-- `scripts/check-web-env.mjs`: publicação exige VITE_API_URL com origem HTTPS da API, sem caminho, credenciais ou query. Evita publicar apontando para proxy local `/api`.
-- `deploy/render.paid.yaml`: API nativa Node 24.22.1, plano 0.5c-512mb, uma instância, região Virginia; PostgreSQL 17 no plano 0.1c-256mb, 1 GB, sem autoscaling; disco 1 GB em `/var/data`. Todos são recursos NOVOS.
-- `DATABASE_URL` vem de `fromDatabase`, usando a conexão interna na mesma região; credenciais nunca ficam no YAML. Banco com `ipAllowList: []`, sem acesso SQL pela internet. WEB_ORIGIN é informado na criação, com a origem canônica da Vercel.
-- Build API inclui servidor, migrations, seed e verificação de armazenamento compilados. `preDeployCommand` aplica migrations **sem usar o disco**, que não é montado nessa fase.
-- `start-render.mjs` verifica volume/chave no runtime, prepara demo uma vez com marcador no disco e inicia API/worker. Sem acesso ao catálogo no primeiro seed, o startup falha e pode ser repetido; não fabrica dados.
-
-## Custo proposto — autorização obrigatória antes de aplicar
-
-| Recurso | Plano/capacidade | Base mensal estimada |
+| Serviço | Recurso/plano | Identidade |
 |---|---|---|
-| API sempre ativa | 0.5c-512mb | US$ 7,00 |
-| PostgreSQL sem expiração | 0.1c-256mb | US$ 6,00 |
-| Armazenamento PostgreSQL | 1 GB | US$ 0,30 |
-| Disco da auditoria | 1 GB | US$ 0,25 |
-| Total | sem autoscaling | **US$ 13,55/mês** |
+| Frontend | Vercel Hobby, Node 24.x, Vite | prj_szjw8K9BQ7T9WAJQpLD28VnhcAeZ |
+| API + WebSocket | Render Free, Virginia, 1 instância | srv-dbfoo38ae00c73cqb0r0 |
+| PostgreSQL 17 | Neon Free, Virginia | cold-haze-51518470 / br-muddy-mud-b80fr83g (production) |
+| Checkpoints | Vercel Blob privado Hobby, Virginia | store_jAwONeQLbcJmOzGK / elite-v1/ |
+| Liquidação | Neon Function settlement, Node 24 | https://br-muddy-mud-b80fr83g-settlement.compute.c-14.us-east-1.aws.neon.tech/ |
+| Agendamento | Function Trigger a cada minuto UTC | trigger-81af7a75-3b54-4914-ad70-d410cfb95939 |
 
-Antes de impostos e eventuais excedentes de tráfego/build. Não é teto de cobrança da plataforma. Gasto explicitamente NÃO AUTORIZADO; tabela apenas registra a proposta recusada. Vercel Hobby existente será usado sem upgrade, após autorização de acesso à equipe. Confirmar valores finais na tela antes de criar recursos.
+Nenhum serviço pago/upgrade/autoscaling pago autorizado ou criado. Responsável confirmou ausência de forma de pagamento no workspace Render. Neon retornou subscription_type=free_v3. Vercel permanece Hobby. Franquias excedidas podem suspender o serviço. Recursos de outros projetos não foram reutilizados. Blueprint pago em deploy/render.paid.yaml é somente histórico recusado.
 
-Referências oficiais verificadas em 26/10/2026: [preços](https://render.com/pricing?trk=article-ssr-frontend-pulse_little-text-block), [compute plans](https://render.com/docs/compute-plans), [discos](https://render.com/docs/disks), [Blueprint](https://render.com/docs/blueprint-spec).
+## Configuração e publicação
 
-## Persistência e chaves
+- Raiz do monorepo na Vercel. vercel.json instala npm ci --include=dev, exige VITE_API_URL HTTPS, compila web, publica apps/web/dist e trata rotas SPA/headers. VITE_API_URL=https://elite-dev-verzel-api.onrender.com.
+- WEB_ORIGIN=https://elite-dev-verzel-zmats-projects.vercel.app na API. Essa é a origem canônica para os fluxos: outros aliases Vercel não estão automaticamente liberados para CORS/WebSocket. WSS conecta diretamente à Render.
+- Render build: npm ci --include=dev && npm run build -w @elite/api. Start: migrations compiladas, seed idempotente e npm start -w @elite/api. NODE_VERSION=24.22.1, HOST=0.0.0.0, PORT=10000, NODE_ENV=production, ALLOW_DEMO_SEED=true. Sem disco persistente.
+- DATABASE_URL usa conexão Neon direta, TLS verify-full. Listener LISTEN/NOTIFY usa conexão dedicada; não trocar pelo pooler de transações/driver HTTP.
+- AUDIT_STORAGE=blob, AUDIT_BLOB_PREFIX=elite-v1/. AUDIT_PRIVATE_KEY e BLOB_READ_WRITE_TOKEN configurados somente nos ambientes protegidos da API/função; AUDIT_PUBLIC_KEY_FINGERPRINT fixa a identidade. Nenhum segredo em VITE_*, Git ou arquivos temporários.
+- RUN_SETTLEMENT_JOBS=false na API. Neon Function executa processDue e a mesma settleAuction diretamente no banco, sem chamar Render. Trigger cron * * * * * (UTC). A presença do header interno Neon é verificada; Neon documenta que remove headers X-Neon-* fornecidos por clientes. POST público sem header retorna 403.
+- Deploy da função: deploy/neon.ts; função existente apenas, sem recriar banco/auth. CLI com sessão no cofre Windows. scripts/with-secret-env.mjs recebe JSON por entrada sem eco, injeta ambiente transitório e redige valores na saída. Não usar segredos em argumentos de shell nem salvar token em workspace.
+- Antes de aplicar config: neon config plan --config deploy/neon.ts --project-id cold-haze-51518470 --branch production --profile elite-verzel. Publicar com neon deploy e --no-env-pull para preservar .env local e evitar arquivos de credenciais. A configuração lê os segredos do ambiente, não do código.
+- Render auto-deploy está desligado; publicar commit revisado e acionar deploy do serviço explicitamente. Confirmar plan=free em qualquer mudança.
 
-Menor alteração da arquitetura: preservar o armazenamento já existente em **disco persistente da API**, fora do PostgreSQL. Blueprint define AUDIT_DIRECTORY=/var/data/elite-audit e AUDIT_MOUNT_PATH=/var/data. AUDIT_REQUIRE_MOUNT=true confere `/proc/self/mountinfo` e realpath, recusando filesystem efêmero ou diretório fora do mount.
+## Evidências realmente executadas
 
-AUDIT_KEY_MODE=persistent-file gera Ed25519 só no primeiro runtime com diretório vazio e volume verificado. Chave privada com permissão 0600, sem stdout e sem commit; public.pem fixa a identidade no mesmo volume. Reinício/redeploy reutilizam a chave e checkpoints. Se chave sumir e houver pin/checkpoints, a API recusa gerar substituta. A alternativa existente AUDIT_PRIVATE_KEY por segredo continua suportada; nunca usar VITE_* para segredos.
+- Três migrations aplicadas ao Neon. Seed de demonstração idempotente concluído na Render; dados existentes não tiveram saldo/prazo reiniciados.
+- Frontend e /health HTTP 200 sem sessão. Proteção SSO do projeto removida para publicação pública autorizada.
+- Cinco contas novas identificadas como validação; nenhum lote/usuário importante alterado. Login/CORS, catálogo, snapshots, vitrine, lances simultâneos no mesmo lote e entre lotes, reserva/liberação, sem saldo, autossuperação e dois clientes WS aprovados. Sessões do script encerradas.
+- Dois lotes com vencedor e um sem lances venceram às 14:29 e foram liquidados pelo Neon às 14:30 de 26/10/2026 (America/Sao_Paulo), com jobs internos da API desativados. Consulta READ ONLY confirmou um comprovante, um PURCHASE e um SALE por lote vencedor; soma zero, nenhuma duplicação, reservas agregadas corretas. Sem lances: nenhuma movimentação/comprovante.
+- Auditoria pública INTEGRO. Evidência JSON bruta salva antes de redeploy e verificador independente aprovou quatro eventos assinados/checkpoints. Fingerprint de produção: dc3370282c6119b2a77433fc95c0c84fa6868b23f77e8d6ffd7027d872f3ece3. Chave pública em AUDIT_PRODUCTION_PUBLIC_KEY.pem.
+- Papel SQL elite_verzel_owner sem pg_read_server_files; credencial SQL não é credencial do Blob/controle dos deployments. Esse teste não demonstra proteção contra administrador das plataformas.
+- 29/29 testes direcionados após correções compatíveis de Drizzle e Zod; TypeScript, lint e build aprovados. npm audit --omit=dev: zero avisos. Ainda há avisos nas ferramentas de desenvolvimento; não foi aplicado npm audit fix --force.
+- Dados das provas ficam em tmp/production-evidence.json, tmp/production-readonly.json e tmp/production-audit-before.json, ignorados pelo Git. Scripts versionados explicam a reprodução sem incluir sessões/credenciais.
 
-O disco não é compartilhado com o processo do PostgreSQL. Credenciais SQL permitem modificar tabelas, não ler a chave nem alterar arquivos da API. Administrador da conta Render ou do runtime/shell da API pode controlar ambos: está fora dessa garantia. Não há WORM/object-lock implementado. Limitar acesso administrativo, manter conta com MFA e backups; não afirmar imutabilidade contra operador da plataforma.
+## Limitações e provas ainda em andamento
 
-Render documenta persistência entre deploys/restarts e disco disponível só no runtime. Disco implica uma única instância e breve indisponibilidade em deploys. Snapshot automático não substitui retenção externa nem comprova recuperação sem testes. A proteção permanece condicional ao modelo documentado em AUDIT.md.
+- Persistência de chave/checkpoints/dados depois de redeploy da API e função: em verificação. A criação de um storage remoto ou teste Docker local não substitui essa prova.
+- Suspensão física da Render por ociosidade, seguida de liquidação agendada de lote controlado e reativação: em verificação. A função já executou liquidação com worker da API desativado, mas isso sozinho não prova suspensão.
+- Render Free suspende após 15 min sem tráfego de entrada e pode levar aproximadamente um minuto para reativar. Limite de 750 h/mês compartilhado no workspace; tráfego/build também têm franquias. Sem forma de pagamento, excesso suspende/impede build em vez de autorizar cobrança.
+- Neon: 100 CU-h/mês; agendamento por minuto mantém o banco acordado. 0,25 CU continuamente por 30 dias equivale a ~180 CU-h. Demonstração curta cabe no orçamento de uso; não há promessa de disponibilidade gratuita indefinida. Functions também têm franquia de compute/invocações. Conferir limites efetivos no console, não habilitar upgrades.
+- Blob Hobby: 1 GB, 2 mil operações avançadas e 10 mil simples/mês, além de transferência; quotas compartilhadas. Auditoria financeira exige leitura fresca e pode esgotar operações antes de armazenamento. Excesso bloqueia acesso; aplicação deve falhar fechado, sem ancoragem fictícia.
+- Checkpoints são write-once por convenção da aplicação, não WORM. Quem controla token/chave/runtime/contas administrativas pode apagar ou substituir provas. Não declarar auditoria plenamente protegida contra todos os tipos de adulteração.
 
-## Passos externos restantes
-
-1. Acesso Vercel autorizado e projeto criado. Configurar backend após a decisão de infraestrutura, sem enviar tokens pela conversa.
-2. Código revisado publicado no repositório dedicado. Não publicar .env, var, node_modules, tmp, .vercel nem PDF do edital.
-3. Escolher arquitetura após ler INFRA_OPTIONS.md. Recursos pagos já foram recusados; não aplicar Blueprint nem criar serviços/banco/disco pagos.
-4. Publicar o commit revisado no repositório dedicado e criar projeto Vercel **na raiz do monorepo**. Configurar Node 24.x. Reservar e confirmar o domínio canônico real antes de configurar WEB_ORIGIN; nomes/URLs não são garantidos enquanto não criados.
-5. Aplicar `deploy/render.paid.yaml` pelo Blueprint Dashboard, já sincronizado no repositório. O MCP da Render cria API/DB, mas não anexa discos nem cria Blueprint; não usar criação incompleta sem disco. Se for necessário acesso Git OAuth, concluir no Dashboard.
-6. Configurar WEB_ORIGIN com a origem HTTPS canônica da Vercel; iniciar API e aguardar deploy **live**. Confirmar mount e fingerprint nos logs, sem extrair chave privada. Conferir migrations e seed.
-7. Definir VITE_API_URL na Vercel com a origem HTTPS real da API e publicar o frontend. A URL WS é derivada automaticamente (`https:`→`wss:`), sem proxy Vercel para WebSocket.
-
-Não criar recursos duplicados entre MCP e Blueprint. Configurações do Blueprint são a fonte de verdade da API/DB. Se usar CLI, validar primeiro com `render blueprints validate render.yaml`; CLI não está autenticada/instalada neste ambiente. Foi realizada validação estrutural pelo JSON Schema oficial, não uma aplicação/validação autenticada do Blueprint pela Render.
-
-## Verificação de produção a executar
-
-- Registrar IDs, URLs canônicas, commit e deploy IDs reais; abrir frontend sem sessão; verificar SPA por link direto para comprovante/auditoria.
-- GET /health; CORS só para WEB_ORIGIN; conexão WS com Origin real do frontend. Não habilitar coringa para contornar erro. Previews Vercel de outra origem não estão automaticamente autorizadas.
-- Login, vitrine e carteira com usuários de demonstração; preferir contas/lotes descartáveis identificados como validação para testes de lance, sem alterar dados importantes.
-- Aceitar lance válido; recusar abaixo do mínimo, autossuperação e sem saldo. Confirmar reserva, superação/liberação e atualização em segunda sessão.
-- Criar lote de validação com fim curto. Lance próximo do fim prorroga 120s: respeitar a regra, sem editar prazo no banco para acelerar o teste.
-- Salvar evidência JSON, fingerprint e hash do checkpoint antes de reiniciar. Reiniciar a API e depois fazer novo deploy do mesmo commit. Conferir chave, checkpoints, dados e auditoria INTEGRO após ambos.
-- Conferir recuperação de lote vencido no período offline: um débito, um crédito, um comprovante; sem cobrança duplicada ao repetir restart/deploy.
-- Abrir comprovante/auditoria publicamente e executar `scripts/verify-audit.mjs` com fingerprint confiável fora da página.
-
-## Evidência local desta preparação
-
-- `deploy/render.paid.yaml` aprovado pelo JSON Schema oficial draft 2020-12 baixado de https://render.com/schema/render.yaml.json .
-- Build web/API, TypeScript e lint aprovados; comando **compilado** de migration executado contra o banco local existente, sem reaplicar migrations já registradas.
-- 12/12 testes direcionados de liquidação/auditoria aprovados após a preparação.
-- Docker oficial node:24.22.1-alpine, volume exclusivo `elite-verzel-audit-sprint4`: checkpoint e chave preservados em substituição completa de contêiner, hash/fingerprint idênticos, modo da chave 0600. Sem volume, inicialização recusada. Chave removida temporariamente apenas nesse volume de teste, startup recusado e chave restaurada.
-- Hash do checkpoint de teste: 7d781a6a07eabfe2e218ecd3b8ae2027ba82477065e65ca7f90438d1c0761e70. Fingerprint desse ambiente **de teste**: f38a573aaac0cfe775c730f175d750a874b0c0b84e9874f1199b3875ae395ce8.
-- Validação da origem web aceita HTTPS válido e recusa configuração ausente. Esses testes locais não comprovam persistência na Render.
-
-## URLs públicas
-
-Nenhuma URL pública deste projeto disponível ainda. Não substituir por links locais, por nomes propostos ou por serviços de outro projeto. Preencher esta seção somente depois de publicar e verificar.
-
-Código e CI são públicos: https://github.com/matssgit/elite-dev-verzel ; primeiro CI aprovado em https://github.com/matssgit/elite-dev-verzel/actions/runs/40364745794 (migrations, TypeScript, lint, testes e build). Ainda não há URL da aplicação/API.
+Fontes oficiais verificadas: [Render Free](https://render.com/docs/free), [Neon Free](https://neon.com/pricing), [Function Triggers](https://neon.com/docs/compute/functions/triggers/schedule), [segredos de função](https://neon.com/docs/compute/functions/environment-variables), [Blob Hobby](https://vercel.com/docs/vercel-blob/usage-and-pricing).

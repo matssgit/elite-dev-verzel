@@ -57,11 +57,13 @@ Migration marca lotes existentes com audit_version=0. O worker importa esses dad
 Referência da implementação criptográfica padrão: https://nodejs.org/api/crypto.html#cryptosignalgorithm-data-key-callback .
 # Implantação — estado em 26/10/2026
 
-Não há auditoria de produção plenamente validada. Checkpoints atuais são arquivos independentes do PostgreSQL em var/audit (desenvolvimento). Diretório/chave não são versionados. Render Free perde esses arquivos em restart/redeploy/suspensão e não suporta disco persistente: a implementação atual deve recusar essa implantação, não declarar integridade com uma âncora vazia.
+Produção usa Blob privado independente do PostgreSQL, prefixo elite-v1/. Desenvolvimento continua usando var/audit. AUDIT_STORAGE=blob exige chave Ed25519 em AUDIT_PRIVATE_KEY, token BLOB_READ_WRITE_TOKEN e AUDIT_PUBLIC_KEY_FINGERPRINT; não gera chave nova silenciosamente. O adaptador de arquivos continua recusando Render sem mount persistente verificado. Segredos não são versionados nem enviados ao frontend.
 
 Foi acrescentada verificação Linux de mount independente e confinamento do diretório por realpath. Modo persistent-file de produção exige mount verificado, usa chave 0600 e recusa regeneração se houver pin público/checkpoints. Volume Docker exclusivo preservou chave e checkpoint entre contêineres; perda da chave e ausência do volume foram rejeitadas. Essas provas são locais; restart/redeploy na Render e isolamento efetivo da credencial SQL permanecem pendentes.
 
-Alternativa gratuita proposta em INFRA_OPTIONS.md exige AuditStore remoto durável e independente (Blob), outbox/retry, verificação completa de conflitos/cadeia e chave estável em segredos de runtime separados do SQL. Ainda não implementada. Token de escrita do storage e acesso ao runtime podem apagar/forjar evidências; não há garantia WORM contra administrador da aplicação. No modelo existente, o atacante tem apenas acesso de escrita ao banco. Não atribuir ao Blob ou ao disco proteção contra um atacante com acesso à chave.
+Adaptador remoto implantado: pin público write-once, publicação sem sobrescrita, conflitos idênticos aceitos no replay concorrente, listagem paginada completa, leitura direta da origem sem cache e validação de assinatura/sequência/encadeamento. Falhas de leitura bloqueiam operação financeira; outbox retenta publicação após commit, inclusive pela função independente. Token de escrita e acesso ao runtime podem apagar/forjar evidências; não há garantia WORM contra administrador da aplicação. O atacante coberto tem apenas escrita no banco. Não atribuir proteção contra quem possui a chave.
+
+Chave pública de produção: AUDIT_PRODUCTION_PUBLIC_KEY.pem. Fingerprint SHA-256: dc3370282c6119b2a77433fc95c0c84fa6868b23f77e8d6ffd7027d872f3ece3. Diferente da demonstração local documentada abaixo. Variáveis configuradas na Render e na Function Neon; respostas da API de configuração Neon devolvem somente nomes, com valores write-only/encriptados. Papel SQL verificado sem pg_read_server_files. O teste não concede proteção contra administrador da conta Neon/Render/Vercel. Restart/redeploy e suspensão física ainda em verificação.
 
 ---
 
