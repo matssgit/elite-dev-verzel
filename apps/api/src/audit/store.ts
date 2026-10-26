@@ -4,6 +4,7 @@ import { mkdir, readFile, readdir, open, link, unlink, realpath } from 'node:fs/
 import { resolve, join, isAbsolute, relative } from 'node:path';
 import { projectRoot } from '../config.js';
 import type { AuditRecord } from '@elite/shared';
+import { BlobCheckpoints } from './blob.js';
 
 export function canonical(value:unknown):string {
   if(value===null || typeof value==='boolean' || typeof value==='string')return JSON.stringify(value);
@@ -35,7 +36,17 @@ async function writeOnce(path:string,data:string) {
   finally{await unlink(temporary).catch(()=>{});}
 }
 export class AuditStore {
-  private constructor(readonly directory:string,private key:ReturnType<typeof createPrivateKey>,readonly publicKey:string){}
+  private constructor(readonly directory:string,private key:ReturnType<typeof createPrivateKey>,readonly publicKey:string,private remote?:BlobCheckpoints){}
+  static async openBlob(token:string,prefix:string,pem:string,expectedFingerprint:string) {
+    if(!pem || !/^[a-f0-9]{64}$/.test(expectedFingerprint))throw new Error('Blob audit requires protected signing key and pinned fingerprint');
+    const key=createPrivateKey(pem.replace(/\\n/g,'\n'));
+    const publicKey=createPublicKey(key).export({type:'spki',format:'pem'}).toString();
+    const remote=new BlobCheckpoints(token,prefix);
+    const store=new AuditStore(`blob:${prefix}`,key,publicKey,remote);
+    if(store.fingerprint!==expectedFingerprint)throw new Error('Audit signing key does not match configured public fingerprint');
+    await remote.writeOnce('public.pem',publicKey);
+    return store;
+  }
   static async open(directory:string) {
     if(process.env.NODE_ENV==='production'&&process.env.RENDER==='true'&&process.env.AUDIT_REQUIRE_MOUNT!=='true')throw new Error('Render production requires persistent mount verification');
     if(process.env.AUDIT_REQUIRE_MOUNT==='true')await assertPersistentMount(directory);
@@ -69,12 +80,26 @@ export class AuditStore {
   }
   async checkpoints(auctionId:string):Promise<AuditRecord[]> {
     if(!/^[a-f0-9-]{36}$/.test(auctionId))throw new Error('Invalid auction id');
+    if(this.remote) {
+      const prefix=`checkpoints/${auctionId}/`;const names=await this.remote.names(prefix);
+      if(names.some(n=>!/^\d+\.json$/.test(n)))throw new Error('Unexpected checkpoint object');
+      const records:AuditRecord[]=[];
+      for(const name of names.sort((a,b)=>Number(a.split('.')[0])-Number(b.split('.')[0]))) {
+        const text=await this.remote.read(prefix+name);if(text===null)throw new Error('Listed checkpoint disappeared');
+        const record=JSON.parse(text) as AuditRecord;
+        if(record.auctionId!==auctionId || record.sequence!==Number(name.split('.')[0]) || !this.valid(record))throw new Error('Invalid independent checkpoint');
+        records.push(record);
+      }
+      if(records.some((r,i)=>r.sequence!==i || r.previousHash!==(i?records[i-1]!.hash:'0'.repeat(64))))throw new Error('Independent checkpoint chain has gaps');
+      return records;
+    }
     const directory=join(this.directory,'checkpoints',auctionId);
     let names:string[];try{names=await readdir(directory);}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return [];throw error;}
     return Promise.all(names.filter(n=>/^\d+\.json$/.test(n)).sort((a,b)=>Number(a.split('.')[0])-Number(b.split('.')[0])).map(async name=>JSON.parse(await readFile(join(directory,name),'utf8')) as AuditRecord));
   }
   async publish(record:AuditRecord) {
     if(!this.valid(record))throw new Error('Refusing to publish an invalid checkpoint signature');
+    if(this.remote){await this.remote.writeOnce(`checkpoints/${record.auctionId}/${record.sequence}.json`,canonical(record));return;}
     const directory=join(this.directory,'checkpoints',record.auctionId);await mkdir(directory,{recursive:true});
     await writeOnce(join(directory,`${record.sequence}.json`),canonical(record));
   }
@@ -82,6 +107,11 @@ export class AuditStore {
 async function accessPublicPin(directory:string){await readFile(join(directory,'public.pem'),'utf8');}
 const stores=new Map<string,Promise<AuditStore>>();
 export function auditStore(directory?:string) {
+  if(!directory && process.env.AUDIT_STORAGE==='blob') {
+    const prefix=process.env.AUDIT_BLOB_PREFIX??'elite-v1/';const id=`blob:${prefix}`;
+    if(!stores.has(id))stores.set(id,AuditStore.openBlob(process.env.BLOB_READ_WRITE_TOKEN??'',prefix,process.env.AUDIT_PRIVATE_KEY??'',process.env.AUDIT_PUBLIC_KEY_FINGERPRINT??''));
+    return stores.get(id)!;
+  }
   if(process.env.NODE_ENV==='production'&&!process.env.AUDIT_DIRECTORY)throw new Error('AUDIT_DIRECTORY must point to persistent independent storage in production');
   const path=resolve(projectRoot,directory??process.env.AUDIT_DIRECTORY??'var/audit');
   if(!stores.has(path))stores.set(path,AuditStore.open(path));return stores.get(path)!;
