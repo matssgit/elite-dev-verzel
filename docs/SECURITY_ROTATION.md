@@ -1,5 +1,7 @@
 # Rotação de credenciais — Sprint 5
 
+**Janela atual aberta em 26/10 às 19:22:** painéis prontos, manutenção confirmada na API e função, trigger desativado. Aguardando o operador executar os passos manuais abaixo. Nenhuma credencial foi alterada automaticamente; cinco auditorias preservadas antes da troca em tmp/rotation-window-baseline.json. A retirada de manutenção descrita na tentativa anterior não representa o estado desta nova janela.
+
 Estado em 26/10/2026: **fase 1 autorizada pelo responsável; nenhuma das três credenciais foi rotacionada**. A revisão automática rejeitou o transporte por stdin do terminal antes da troca. O cron foi reativado e a manutenção retirada; não manter indisponibilidade enquanto falta o caminho protegido. Por determinação do responsável, as credenciais anteriores são potencialmente comprometidas. Não imprimir valores nem enviá-los em argumentos/entrada de terminal. A busca no histórico Git não elimina exposição em registros externos.
 
 ## Recursos e consumidores

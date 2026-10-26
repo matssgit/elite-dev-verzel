@@ -1,5 +1,7 @@
 # Deploy — Sprint 4, opção gratuita aprovada
 
+**Estado operacional em 26/10 às 19:22:** nova janela manual autorizada, API/função em manutenção e cron pausado, aguardando o operador atualizar as credenciais. API dep-dbft4g942hec73dgokn0 confirmou 503 MAINTENANCE; cinco auditorias preservadas. Não reativar escritas/cron antes de verificar os novos consumidores. Nenhum reset/rotação foi feito pelo agente. O restabelecimento às 18:59 abaixo refere-se à tentativa anterior.
+
 Atualização Sprint 5 (26/10/2026): fase 1 SQL/Blob autorizada, mas bloqueada antes da troca por rejeição do transporte de segredos via terminal. Nenhuma credencial foi rotacionada. Manutenção retirada, cron reativado e API live em 9c4f084; health 200 e cinco auditorias conferidas às 18:59. Plano/alternativa direta nos painéis em SECURITY_ROTATION.md. Não tratar credenciais anteriores como definitivas nem INTEGRO como garantia contra chave comprometida. Assinatura continua na fase 2, sem troca.
 
 Aplicação: https://elite-dev-verzel-zmats-projects.vercel.app

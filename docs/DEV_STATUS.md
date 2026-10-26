@@ -1,5 +1,7 @@
 # Status DEV — Sprint 5 — 26/10/2026
 
+**Janela manual atual, 26/10 às 19:22 (America/Sao_Paulo): manutenção ATIVA na API e na função, trigger PAUSADO, usuário com painéis prontos.** API c9520ff (dep-dbft4g942hec73dgokn0) confirmou 503 MAINTENANCE antes da entrada financeira. Função deployment 4 preservou todos os nomes de variáveis anteriores. Cinco auditorias capturadas em tmp/rotation-window-baseline.json. Credenciais ainda não trocadas pelo agente; aguardando inserção manual e confirmação do operador. Não reabrir operações antes da verificação. As notas de restabelecimento às 18:59 abaixo pertencem à tentativa anterior.
+
 ## Estado atual
 
 Demonstração publicada: https://elite-dev-verzel-zmats-projects.vercel.app .
