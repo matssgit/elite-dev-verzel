@@ -1,6 +1,6 @@
 # Matriz de requisitos
 
-Sprint 4: opção gratuita aprovada e publicada em Vercel Hobby/Render Free/Neon Free. Checkpoints no Blob privado e liquidação por Function Trigger Neon independente, preservando transações/bloqueios existentes. Validação pública de login, catálogo, vitrine, WebSocket, concorrência financeira, liquidação, comprovantes e assinaturas executada em contas/lotes descartáveis. Persistência após redeploy e execução com API fisicamente suspensa ainda em verificação; evidências em DEV_STATUS/DEPLOY. Recursos pagos não autorizados. Não há garantia WORM contra administrador da aplicação/storage.
+Sprint 5: aplicação publicada nos serviços gratuitos, com liquidação Neon independente e checkpoints Blob. Persistência após redeploy e retomada do lote controlado confirmadas; **suspensão física histórica inconclusiva**, sem repetição. Credenciais anteriores potencialmente comprometidas: rotação pendente de confirmação; transição criptográfica ainda não implementada. Validações funcionais abaixo não equivalem a segurança operacional plena. Evidências em DEV_STATUS/DEPLOY e plano em SECURITY_ROTATION. Nenhum recurso pago autorizado.
 
 Fonte: `Teste tecnico Elite Dev - Verzel.pdf`, 7 páginas, lidas visualmente na íntegra em 26/10/2026 (o documento contém imagens, sem camada textual útil).
 

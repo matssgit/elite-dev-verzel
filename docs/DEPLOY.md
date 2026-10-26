@@ -1,5 +1,7 @@
 # Deploy — Sprint 4, opção gratuita aprovada
 
+Atualização Sprint 5 (26/10/2026): revalidação pública e retomada do teste concluídas abaixo. Rotação das três credenciais ainda não executada; plano e confirmação obrigatória em SECURITY_ROTATION.md. Não tratar as credenciais anteriores como definitivas nem o status técnico INTEGRO como garantia contra chave comprometida. O modo FINANCIAL_MAINTENANCE foi preparado/testado localmente e permanece desativado em produção.
+
 Aplicação: https://elite-dev-verzel-zmats-projects.vercel.app
 API/health: https://elite-dev-verzel-api.onrender.com/health
 Código: https://github.com/matssgit/elite-dev-verzel
@@ -44,8 +46,10 @@ Nenhum serviço pago/upgrade/autoscaling pago autorizado ou criado. Responsável
 
 ## Limitações e provas ainda em andamento
 
-- Persistência de chave/checkpoints/dados depois de redeploy da API e função: em verificação. A criação de um storage remoto ou teste Docker local não substitui essa prova.
-- Suspensão física da Render por ociosidade, seguida de liquidação agendada de lote controlado e reativação: em verificação. A função já executou liquidação com worker da API desativado, mas isso sozinho não prova suspensão.
+- Persistência após redeploy real: comprovante de R$11, fingerprint e quatro checkpoints permaneceram idênticos após Render dep-dbfouq4s728c738ilkog e novo deployment da função; login permaneceu funcional. É prova de persistência, não de sigilo da chave.
+- Teste interrompido retomado sem repetição: lote 8e1b798d-0654-4f4e-b514-933f4d4b7bf7 venceu às 14:55:15.253 e liquidou às 14:56:00.956 de 26/10, pelo cron Neon. Um débito/crédito de R$10, um comprovante fc05d6d1-cd77-4720-9fa7-2a5e5ba47ee6, reservas corretas, três eventos/checkpoints conferidos. Logs do gatilho: failures=0.
+- Suspensão física da Render às 14:55: **INCONCLUSIVA**. Eventos e métricas consultados não demonstraram suspensão; série vazia não é zero instâncias. Não foi criado outro lote para repetir a prova. Reconexão WS e login/permissões/logout revalidados às 18:39, sem novas operações financeiras.
+- Demonstração original conferida às 18:42: lote 00000000-0000-4000-8000-000000000100 AO_VIVO, fim 26/10 às 20:22 (America/Sao_Paulo), um lance. Seed não renova o prazo; avaliar/criar outro lote pelo painel se a avaliação ocorrer depois, após tratar a rotação.
 - Render Free suspende após 15 min sem tráfego de entrada e pode levar aproximadamente um minuto para reativar. Limite de 750 h/mês compartilhado no workspace; tráfego/build também têm franquias. Sem forma de pagamento, excesso suspende/impede build em vez de autorizar cobrança.
 - Neon: 100 CU-h/mês; agendamento por minuto mantém o banco acordado. 0,25 CU continuamente por 30 dias equivale a ~180 CU-h. Demonstração curta cabe no orçamento de uso; não há promessa de disponibilidade gratuita indefinida. Functions também têm franquia de compute/invocações. Conferir limites efetivos no console, não habilitar upgrades.
 - Blob Hobby: 1 GB, 2 mil operações avançadas e 10 mil simples/mês, além de transferência; quotas compartilhadas. Auditoria financeira exige leitura fresca e pode esgotar operações antes de armazenamento. Excesso bloqueia acesso; aplicação deve falhar fechado, sem ancoragem fictícia.

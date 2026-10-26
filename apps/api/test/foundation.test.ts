@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import pg from 'pg';
 import { env } from '../src/config.js';
 import { buildApp } from '../src/app.js';
@@ -78,6 +78,18 @@ describe('Fundação em PostgreSQL real',()=>{
   it('banco impede comprometimento maior que total',async()=>{
     await expect(pool.query('UPDATE wallets SET committed_cents=total_cents+1 WHERE user_id=$1',[bidder.user.id])).rejects.toMatchObject({code:'23514'});
     expect((await balance(bidder)).committedCents).toBe(0);
+  });
+  it('manutenção bloqueia mutações financeiras e preserva leitura sem alterar saldo',async()=>{
+    const before=await balance(bidder);vi.stubEnv('FINANCIAL_MAINTENANCE','true');
+    try {
+      for(const url of ['/wallet/deposits','/auctions',`/auctions/${randomUUID()}/bids`,`/auctions/${randomUUID()}/cancel`]) {
+        const response=await app.inject({method:'POST',url,headers:headers(bidder),payload:{amountCents:1000}});
+        expect(response.statusCode).toBe(503);expect(response.json().code).toBe('MAINTENANCE');
+      }
+      expect(await balance(bidder)).toEqual(before);
+      expect((await app.inject({url:'/health'})).statusCode).toBe(200);
+    }finally{vi.unstubAllEnvs();}
+    expect((await app.inject({method:'POST',url:'/wallet/deposits',payload:{amountCents:1000}})).statusCode).toBe(401);
   });
   it('sessão expirada ou revogada não pode operar',async()=>{
     await pool.query("UPDATE sessions SET expires_at=now()-interval '1 second' WHERE user_id=$1",[other.user.id]);

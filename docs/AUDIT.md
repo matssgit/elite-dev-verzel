@@ -1,12 +1,14 @@
 # Auditoria: algoritmo, confiança e limites
 
+**Sprint 5 — rotação pendente:** a chave privada e o token anteriores são tratados como potencialmente comprometidos. A verificação matemática dos registros existentes continua disponível; isso não comprova que uma chave exposta permaneceu sob controle exclusivo. Não houve rotação, exclusão/reassinatura de eventos nem troca silenciosa do pin. Procedimento e confirmação em [SECURITY_ROTATION.md](SECURITY_ROTATION.md).
+
 ## Modelo de ameaça
 
-A proteção implementada considera um invasor com acesso de escrita ao PostgreSQL, inclusive capaz de apagar e reescrever tabelas inteiras, mas **sem acesso à chave privada, aos checkpoints no sistema de arquivos da API ou ao código da API**. O administrador SQL não deve compartilhar a identidade/permissões do operador desses arquivos.
+A proteção implementada considera um invasor com escrita no PostgreSQL, inclusive capaz de apagar e reescrever tabelas inteiras, mas **sem acesso à chave privada, às credenciais/checkpoints do storage independente ou ao código da API**. A suspeita atual de exposição conjunta ultrapassa esse modelo: não declarar proteção completa contra esse atacante.
 
-Os checkpoints ficam em `AUDIT_DIRECTORY/checkpoints/<auctionId>/<sequence>.json`, fora das tabelas auditadas. A chave privada não é armazenada no banco nem devolvida em endpoints. O diretório é ignorado pelo Git. Em desenvolvimento, a aplicação gera uma chave Ed25519 local; em produção exige `AUDIT_PRIVATE_KEY` (PEM PKCS8, variável secreta) e `AUDIT_DIRECTORY` explícito, persistente e independente do banco.
+Em desenvolvimento, checkpoints ficam em AUDIT_DIRECTORY/checkpoints/<auctionId>/<sequence>.json e a chave local é ignorada pelo Git. A produção gratuita usa AUDIT_STORAGE=blob e objetos privados elite-v1/checkpoints/<auctionId>/<sequence>.json, fora do PostgreSQL. Chave Ed25519 PKCS8 e token ficam em variáveis protegidas; fingerprint pública obrigatória. O backend não os devolve em endpoints. O modo de arquivos em produção continua exigindo mount persistente verificado e não é utilizado no Render Free.
 
-**Limitação operacional atual:** o ambiente local não comprova separação de permissões entre operadores, armazenamento WORM/retention lock, réplica externa ou recuperação após perda do disco. O deploy ainda não configurou/validou esses controles. O requisito de proteção operacional da âncora não está marcado como plenamente validado. Comprometimento conjunto do host da API/chave/checkpoints permite forjar evidências. Não há alegação de inviolabilidade.
+Persistência de checkpoints/chave após redeploy real da API e função foi conferida. Não há WORM/retention lock nem prova de independência contra administrador das plataformas. O token Blob permite excluir/substituir objetos fora do caminho write-once da aplicação. Comprometimento conjunto de banco, token e chave permite forjar evidências. Rotação pendente impede declarar a proteção operacional plenamente validada; não há alegação de inviolabilidade.
 
 ## Cálculo e assinatura
 
@@ -20,7 +22,7 @@ A identidade pública do lote usa SHA-256 do snapshot completo (incluindo capa),
 
 ## Checkpoints independentes e recuperação
 
-Cada evento assinado é uma entrada da outbox durável `audit_records`, gravada na mesma transação do lote/lance/liquidação. Após COMMIT, publicação escreve arquivo temporário exclusivo, sincroniza conteúdo e cria hard link atômico com nome final. Arquivo existente nunca é substituído; divergência gera erro e preserva a evidência. Depois marca `published_at`. Se cair entre arquivo e marcação, repetir apenas confere o mesmo conteúdo. Se cair antes do arquivo, worker recupera entradas não publicadas.
+Cada evento assinado integra a outbox audit_records na mesma transação do lote/lance/liquidação. Após COMMIT, o adaptador publica sem sobrescrita: arquivo temporário/hard link localmente; no Blob, put com allowOverwrite=false e addRandomSuffix=false, conferindo bytes em replay/conflito. Depois marca published_at. Queda entre publicação e marcação permite replay idêntico; antes da publicação, a outbox é recuperada. No deploy gratuito a função independente faz esse processamento; localmente, o worker.
 
 Criação/cancelamento/lance HTTP só respondem sucesso após tentar publicar checkpoints daquele lote. Se publicação falhar após commit, 503 CHECKPOINT_PENDING informa que a operação **foi registrada**. Repetir lance com a mesma Idempotency-Key não cobra/reserva novamente. Worker também publica checkpoints a cada ciclo; liquidação pode aparecer brevemente como PENDENTE até a âncora final existir.
 
@@ -32,7 +34,7 @@ Uma operação confirmada no banco, mas ainda não ancorada fora dele, tem uma j
 
 GET /audit/:id bloqueia o lote para leitura durante a comparação com eventos, lances e checkpoints. Confere assinaturas, hashes anteriores, sequências contíguas, conteúdo dos lances, contagem/liderança, termos, prazos, cancelamento, liquidação e comprovante. Checkpoints são comparados mesmo quando o banco apagou toda a cadeia. Se o próprio lote foi removido e ainda existem checkpoints, informa ADULTERADO.
 
-- INTEGRO: comparações locais conferem e todos os eventos observados têm checkpoints independentes.
+- INTEGRO: comparações observadas conferem e todos os eventos têm checkpoints independentes. Não certifica sigilo da chave, autoria legítima após comprometimento ou ausência de alterações anteriores à captura da evidência.
 - ADULTERADO: divergência de dados, sequência, assinatura ou checkpoint. Também bloqueia novos lances/liquidação quando a divergência é encontrada pelo serviço financeiro.
 - PENDENTE: dados assinados conferem, mas falta cobertura de checkpoints. Não equivale a íntegro.
 
@@ -59,11 +61,11 @@ Referência da implementação criptográfica padrão: https://nodejs.org/api/cr
 
 Produção usa Blob privado independente do PostgreSQL, prefixo elite-v1/. Desenvolvimento continua usando var/audit. AUDIT_STORAGE=blob exige chave Ed25519 em AUDIT_PRIVATE_KEY, token BLOB_READ_WRITE_TOKEN e AUDIT_PUBLIC_KEY_FINGERPRINT; não gera chave nova silenciosamente. O adaptador de arquivos continua recusando Render sem mount persistente verificado. Segredos não são versionados nem enviados ao frontend.
 
-Foi acrescentada verificação Linux de mount independente e confinamento do diretório por realpath. Modo persistent-file de produção exige mount verificado, usa chave 0600 e recusa regeneração se houver pin público/checkpoints. Volume Docker exclusivo preservou chave e checkpoint entre contêineres; perda da chave e ausência do volume foram rejeitadas. Essas provas são locais; restart/redeploy na Render e isolamento efetivo da credencial SQL permanecem pendentes.
+Verificação Linux de mount/realpath e chave 0600 cobrem o adaptador de arquivos. A prova Docker não foi usada como prova da Render. Para o Blob, o redeploy Render dep-dbfouq4s728c738ilkog e o redeploy da função preservaram a fingerprint e os quatro checkpoints do lote 30ae384d-0b99-4430-8dca-131f51e7bd41; o comprovante permaneceu acessível. A credencial SQL foi conferida sem pg_read_server_files, o que não certifica isolamento contra administradores dos provedores.
 
 Adaptador remoto implantado: pin público write-once, publicação sem sobrescrita, conflitos idênticos aceitos no replay concorrente, listagem paginada completa, leitura direta da origem sem cache e validação de assinatura/sequência/encadeamento. Falhas de leitura bloqueiam operação financeira; outbox retenta publicação após commit, inclusive pela função independente. Token de escrita e acesso ao runtime podem apagar/forjar evidências; não há garantia WORM contra administrador da aplicação. O atacante coberto tem apenas escrita no banco. Não atribuir proteção contra quem possui a chave.
 
-Chave pública de produção: AUDIT_PRODUCTION_PUBLIC_KEY.pem. Fingerprint SHA-256: dc3370282c6119b2a77433fc95c0c84fa6868b23f77e8d6ffd7027d872f3ece3. Diferente da demonstração local documentada abaixo. Variáveis configuradas na Render e na Function Neon; respostas da API de configuração Neon devolvem somente nomes, com valores write-only/encriptados. Papel SQL verificado sem pg_read_server_files. O teste não concede proteção contra administrador da conta Neon/Render/Vercel. Restart/redeploy e suspensão física ainda em verificação.
+Chave pública anterior de produção: AUDIT_PRODUCTION_PUBLIC_KEY.pem. Fingerprint SHA-256: dc3370282c6119b2a77433fc95c0c84fa6868b23f77e8d6ffd7027d872f3ece3; identidade sob suspeita de exposição, mantida para histórico. Diferente da chave local. Valores de ambiente da Function são write-only/encriptados, mas isso não revoga valores que tenham sido expostos antes. A troca exige manifesto/fronteiras e suporte a múltiplas chaves, ainda pendentes. Suspensão física às 14:55 foi classificada como inconclusiva, sem repetição; liquidação pelo cron confirmada às 14:56.
 
 ---
 

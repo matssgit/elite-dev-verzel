@@ -2,6 +2,8 @@
 
 Produção: https://elite-dev-verzel-api.onrender.com . Interface canônica: https://elite-dev-verzel-zmats-projects.vercel.app . No deploy gratuito o worker interno está desativado; a mesma liquidação executa em Neon Function Trigger por minuto, independente do Render. Os intervalos de 3s abaixo descrevem o modo local com jobs ativos. API pode demorar aproximadamente um minuto para reativar após ociosidade. Checkpoints em Blob privado; não há mudança dos contratos financeiros/HTTP.
 
+Sprint 5: FINANCIAL_MAINTENANCE=true prepara manutenção coordenada, devolvendo 503 `{code:"MAINTENANCE",message}` antes de POST financeiro (depósito, criação/cancelamento/lance). Leituras/auth continuam com os contratos existentes quando SQL estiver disponível; worker/função também param operações financeiras. Desativado por padrão, ainda não ativado em produção. Rotação de credenciais/chaves pendente em SECURITY_ROTATION.md. INTEGRO é resultado técnico das comparações, sem certificação de autoria após eventual exposição da chave.
+
 Base local: `http://localhost:3001`; frontend usa `/api` via proxy Vite. JSON UTF-8. Dinheiro é sempre número inteiro em **centavos**. Datas ISO 8601 UTC. Erros: `{code, message, issues?}`. Validação 400; sem sessão/expirada 401; perfil inválido 403; conflito 409; erro interno 500 sem detalhes sensíveis.
 
 ## Rotas disponíveis

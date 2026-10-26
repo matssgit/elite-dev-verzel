@@ -20,6 +20,11 @@ import { getReceipt, myResults, processDue } from './settlement/service.js';
 export async function buildApp(options: {databaseUrl:string;webOrigin:string;logger?:boolean;runJobs?:boolean}) {
   const app = Fastify({logger:options.logger ?? false,bodyLimit:16_384});
   const {db,pool} = connect(options.databaseUrl);
+  // Coordinated credential rotation: keep reads/auth available, block financial
+  // mutations before authentication/transaction entry. Disabled by default.
+  app.addHook('onRequest',async(req,reply)=>{
+    if(process.env.FINANCIAL_MAINTENANCE==='true' && req.method==='POST' && /^\/(?:wallet\/deposits(?:\?|$)|auctions(?:\/|\?|$))/.test(req.url))return reply.code(503).send({code:'MAINTENANCE',message:'Operações financeiras temporariamente indisponíveis para manutenção. Tente novamente mais tarde.'});
+  });
   async function anchor(id:string) {
     try{await flushCheckpoints(db,id);}catch(error){app.log.error({err:error},'Committed operation awaits independent checkpoint');throw new AppError(503,'CHECKPOINT_PENDING','Operação registrada; checkpoint pendente. Consulte o lote. Para repetir um lance, preserve a mesma chave de operação.');}
   }

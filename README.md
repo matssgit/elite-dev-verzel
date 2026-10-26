@@ -1,10 +1,12 @@
 # Elite Dev Verzel
 
-Casa de leilões online do desafio técnico Verzel. **Etapa atual: Sprint 4 — demonstração publicada.** Fluxo de leilões com catálogo/snapshots, lances concorrentes, carteira, anti-sniping, WebSocket, encerramento/liquidação automática, resultados, comprovantes compartilháveis e auditoria pública assinada implementados.
+Casa de leilões online do desafio técnico Verzel. **Etapa atual: Sprint 5 — segurança e preparação de entrega.** Fluxo de leilões com catálogo/snapshots, lances concorrentes, carteira, anti-sniping, WebSocket, encerramento/liquidação automática, resultados, comprovantes compartilháveis e auditoria pública assinada implementados.
 
 **Aplicação:** https://elite-dev-verzel-zmats-projects.vercel.app · **API:** https://elite-dev-verzel-api.onrender.com/health · **Código:** https://github.com/matssgit/elite-dev-verzel . Contas de demonstração abaixo usam valores simulados, sem pagamentos reais.
 
 Opção gratuita aprovada: Vercel Hobby, Render Free, Neon Free, Blob privado e função Neon agendada por minuto. A API pode levar aproximadamente um minuto para reativar após ociosidade; a liquidação executa diretamente no Neon, independentemente do processo da API. Checkpoints ficam fora do PostgreSQL; chave estável em variáveis protegidas. Storage não é WORM: acesso à chave/token/contas administrativas está fora da proteção contra adulteração apenas do banco. Evidências e limites em [DEPLOY](docs/DEPLOY.md) e [AUDIT](docs/AUDIT.md). Recursos pagos continuam não autorizados; não aplicar `deploy/render.paid.yaml`.
+
+**Segurança pendente:** por suspeita de exposição em registros de ferramentas, as credenciais de infraestrutura anteriores precisam de rotação. Não foram encontradas no histórico Git revisado. A transição da chave de auditoria deve preservar as assinaturas antigas; o estado técnico INTEGRO não elimina o risco de uma chave comprometida. Plano e confirmação operacional em [SECURITY_ROTATION](docs/SECURITY_ROTATION.md). Ambiente destinado somente à demonstração com valores simulados.
 
 ## Stack e organização
 
@@ -40,6 +42,14 @@ Aguarde o banco ficar saudável se a migration for executada logo após baixar a
 | NODE_ENV | development, test ou production |
 | VITE_API_URL | Base HTTP da API; padrão /api, proxy local; definir URL HTTPS da API em produção |
 | ALLOW_DEMO_SEED | Exigir true explicitamente para seed com NODE_ENV=production |
+| AUDIT_STORAGE | blob na demonstração publicada; omitido usa arquivos locais |
+| AUDIT_DIRECTORY | Diretório local; produção com arquivos exige armazenamento persistente verificado |
+| AUDIT_BLOB_PREFIX | Namespace do store independente; não trocar para ocultar histórico |
+| BLOB_READ_WRITE_TOKEN | Segredo protegido do store privado; somente API/função |
+| AUDIT_PRIVATE_KEY | Chave Ed25519 PKCS8 em segredo de runtime; nunca VITE_* |
+| AUDIT_PUBLIC_KEY_FINGERPRINT | Identidade pública confiável fixada para assinatura |
+| RUN_SETTLEMENT_JOBS | false na API publicada; localmente o worker permanece ativo |
+| FINANCIAL_MAINTENANCE | true bloqueia escritas financeiras e jobs; exige janela coordenada |
 
 Não versionar `.env` ou credenciais. Valores da amostra são exclusivamente de desenvolvimento local. Banco de produção deve usar credenciais próprias.
 
@@ -68,15 +78,17 @@ npm test
 npm run build
 ```
 
-Testes Vitest/Fastify Inject acessam PostgreSQL real indicado em TEST_DATABASE_URL, que precisa das migrations aplicadas. Criam e removem somente seus próprios usuários e registros, sem truncar tabelas. Cobrem autenticação/carteira, lances simultâneos no mesmo lote e entre lotes, outbids cruzados, reserva/liberação, saldo, autossuperação, janela/espera por lock, anti-sniping, idempotência, cancelamento, snapshots, WebSocket, liquidação repetida/concorrente, reinício e adulteração de histórico. Último marco: 34 testes distintos aprovados (regressão 33/33 e direcionados 12/12 após incluir um caso); rodadas reais em DEV_STATUS. Resultados efetivamente executados estão em DEV_STATUS. Navegador conferido com pesquisa, disputa, encerramento automático, resultado do vencedor/vendedor, comprovante e auditoria públicos; ainda sem suíte Playwright versionada.
+Testes Vitest/Fastify Inject acessam PostgreSQL real indicado em TEST_DATABASE_URL. Use banco local de teste com migrations; não executar a suíte no banco da demonstração. Cobrem autenticação/carteira, concorrência entre lances/lotes, reserva/liberação, janela, anti-sniping, idempotência, WebSocket, liquidação e adulteração de histórico, além de falhas/conflitos do Blob e manutenção. Resultados reais em DEV_STATUS: direcionados financeiros/Blob 29/29 na Sprint 4 e manutenção/fundação 11/11 na Sprint 5. O CI do último commit implantado passou. QA independente permanece com o responsável; não há suíte Playwright versionada.
 
-Build web em `apps/web/dist`; API em `apps/api/dist/server.js`. Para API compilada: `npm start -w @elite/api`, com DATABASE_URL e demais variáveis definidas no ambiente. Migrations ainda executam com `tsx`, portanto a instalação do job de release deve incluir devDependencies.
+Build web em `apps/web/dist`; API em `apps/api/dist/server.js`. Para API compilada: `npm start -w @elite/api`, com variáveis no ambiente. Após compilar, migrations e seed também funcionam sem tsx: `npm run db:migrate:production -w @elite/api` e `npm run db:seed:production -w @elite/api`. Build requer devDependencies; runtime compilado não precisa de tsx.
 
 ## Deploy e limitações
 
-Destino planejado: frontend Vercel, backend Render com WebSocket e PostgreSQL persistente sem expiração que afete a avaliação. Ainda sem recursos provisionados, domínios ou credenciais configurados. Publicação é pendente. Antes do deploy, configurar variáveis, CORS, HTTPS, política de proxy, CSP do frontend e job de migrations; verificar publicamente saúde, auth e fluxo completo. Não enviar o desafio antes de implementar os requisitos obrigatórios.
+Publicado nos serviços gratuitos descritos em DEPLOY. Render suspende por ociosidade, Neon e Blob têm franquias e podem suspender acesso ao excedê-las; não há promessa de operação gratuita contínua. CORS/WebSocket autorizam a origem canônica informada acima. A prova de suspensão física no horário do lote controlado foi inconclusiva por falta de telemetria; a liquidação pelo cron independente foi confirmada, sem repetir o lote.
 
-Sessão expira em 24h; token em sessionStorage é acessível a scripts da própria origem. Extrato mostra últimos 50 depósitos. Falha de rede permite repetir depósito com a mesma chave durante a permanência na tela; navegar/recarregar perde a chave em memória. Carteira reserva o lance líder e libera o anterior. Após o prazo, o worker liquida atomicamente (scan a cada 3s e no startup), debita vencedor, credita vendedor e emite comprovante. Auditoria pública usa cadeia/assinaturas e checkpoints fora do banco; veja as garantias condicionais em docs/AUDIT.md. Vitrine até 100 lotes; importação de capas pode levar segundos. WEB_ORIGIN deve corresponder à origem exata usada. Proxy Vite suporta WS; em produção, URL WS deriva de VITE_API_URL.
+Sessão expira em 24h; token Bearer em sessionStorage é acessível a scripts da própria origem. Não usa cookie de autenticação. Extrato mostra as últimas 50 movimentações. Retry de depósito preserva a chave apenas enquanto a tela permanece aberta. Carteira reserva o líder e libera o superado. Depois do prazo, a mesma liquidação transacional debita vencedor, credita vendedor e emite comprovante: localmente no startup/a cada 3s, em produção por cron Neon a cada minuto. Vitrine limitada a 100 lotes, histórico de lances sem paginação. CORS usa uma origem exata; WS deriva de VITE_API_URL.
+
+Concorrência: lock FOR UPDATE no lote e carteiras em ordem de UUID; relógio do PostgreSQL conferido depois dos locks. O mesmo saldo não pode financiar lances simultâneos acima do disponível. O líder não se supera; lance inicial/incremento/período são conferidos no backend. Lance nos últimos 120s soma 120s ao fim vigente. Liquidação usa settledAt, transação e unicidade de comprovante/movimentos para impedir repetição.
 
 ## Uso de IA
 
@@ -89,7 +101,7 @@ Resultados: /resultados. Comprovantes: /comprovantes/:id. Auditoria: /auditoria/
 
 A aplicação assina eventos Ed25519 e publica checkpoints independentes do PostgreSQL. Leia [modelo de ameaça e limitações](docs/AUDIT.md). Não há promessa de proteção contra invasor que controle também a chave e os arquivos. Lotes existentes na atualização recebem baseline com aviso explícito, sem autenticidade retroativa.
 
-Desenvolvimento: var/audit armazena chave privada local e checkpoints, ignorados no Git. Em produção, configurar AUDIT_PRIVATE_KEY (PEM PKCS8 secreto, aceita quebra de linha literal ou escape), AUDIT_DIRECTORY (diretório persistente independente do banco), acesso separado do operador SQL e backups. Não montar a chave como VITE_* nem salvá-la no banco. Não apagar var/audit ao limpar dados; preservar/restaurar a chave original. Novo ambiente tem chave/fingerprint próprios. A chave pública em docs/AUDIT_PUBLIC_KEY.pem registra só esta demonstração.
+Desenvolvimento: var/audit contém chave e checkpoints locais, ignorados no Git. Produção: AUDIT_STORAGE=blob, store privado, chave/token protegidos e pin público; sem arquivos de auditoria no disco efêmero da Render. Preservar checkpoints e identidade; não trocar chave/prefixo sem o procedimento de transição. AUDIT_PUBLIC_KEY.pem identifica apenas o ambiente local; AUDIT_PRODUCTION_PUBLIC_KEY.pem identifica a chave anterior de produção, sob suspeita de exposição. Nenhuma chave privada é publicada.
 
 Para verificar uma evidência JSON baixada sem modificar datas/campos:
 

@@ -5,4 +5,5 @@ export default defineConfig({functions:{settlement:{name:'Elite auction settleme
   BLOB_READ_WRITE_TOKEN:process.env.BLOB_READ_WRITE_TOKEN!,
   AUDIT_PRIVATE_KEY:process.env.AUDIT_PRIVATE_KEY!,
   AUDIT_PUBLIC_KEY_FINGERPRINT:process.env.AUDIT_PUBLIC_KEY_FINGERPRINT!,
+  FINANCIAL_MAINTENANCE:process.env.FINANCIAL_MAINTENANCE??'false',
 }}}});

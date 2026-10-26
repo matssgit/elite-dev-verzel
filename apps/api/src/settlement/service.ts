@@ -43,6 +43,7 @@ export async function settleAuction(db:Database,id:string) {
   });
 }
 export async function processDue(db:Database,onError:(error:unknown)=>void=()=>{}) {
+  if(process.env.FINANCIAL_MAINTENANCE==='true')return;
   const legacy=await db.select({id:auctions.id}).from(auctions).where(eq(auctions.auditVersion,0)).limit(100);
   for(const {id} of legacy)try{
     await db.transaction(async tx=>{const [lot]=await tx.select().from(auctions).where(eq(auctions.id,id)).for('update');if(lot)await initializeAudit(tx,lot);});
