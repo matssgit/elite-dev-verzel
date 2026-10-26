@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+tmp/
+coverage/
+playwright-report/
+test-results/
+*.log
+var/
+.vercel/
+.tools/
+deploy-archives/
+Teste tecnico Elite Dev - Verzel.pdf

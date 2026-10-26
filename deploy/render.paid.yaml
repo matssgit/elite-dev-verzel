@@ -1,0 +1,55 @@
+# INACTIVE / NOT AUTHORIZED: paid proposal explicitly declined on 2026-10-26.
+# Archived for reference only. Do not apply or copy to root without new explicit approval.
+# Root directory is the monorepo root. The API disk is required, not optional.
+services:
+  - type: web
+    name: elite-dev-verzel-api
+    runtime: node
+    plan: 0.5c-512mb
+    region: virginia
+    numInstances: 1
+    autoDeployTrigger: off
+    buildCommand: npm ci --include=dev && npm run build -w @elite/api
+    preDeployCommand: npm run db:migrate:production -w @elite/api
+    startCommand: node scripts/start-render.mjs
+    healthCheckPath: /health
+    disk:
+      name: elite-audit
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 24.22.1
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000
+      - key: WEB_ORIGIN
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: elite-dev-verzel-db
+          property: connectionString
+      - key: AUDIT_DIRECTORY
+        value: /var/data/elite-audit
+      - key: AUDIT_REQUIRE_MOUNT
+        value: "true"
+      - key: AUDIT_MOUNT_PATH
+        value: /var/data
+      - key: AUDIT_KEY_MODE
+        value: persistent-file
+      - key: ALLOW_DEMO_SEED
+        value: "true"
+      - key: SEED_DEMO_ON_START
+        value: "true"
+databases:
+  - name: elite-dev-verzel-db
+    plan: 0.1c-256mb
+    region: virginia
+    postgresMajorVersion: "17"
+    databaseName: elite_verzel
+    diskSizeGB: 1
+    storageAutoscalingEnabled: false
+    ipAllowList: []

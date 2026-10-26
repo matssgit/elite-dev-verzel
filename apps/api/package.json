@@ -1,0 +1,36 @@
+{
+  "name": "@elite/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsup",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:seed": "tsx src/db/seed.ts",
+    "db:migrate:production": "node dist/migrate.js",
+    "db:seed:production": "node dist/seed.js"
+  },
+  "dependencies": {
+    "@elite/shared": "*",
+    "@fastify/cors": "^11.1.0",
+    "@fastify/helmet": "^13.0.0",
+    "@fastify/rate-limit": "^10.3.0",
+    "@fastify/websocket": "^11.3.4",
+    "dotenv": "^17.2.0",
+    "drizzle-orm": "^0.44.0",
+    "fastify": "^5.6.0",
+    "pg": "^8.16.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.15.0",
+    "@types/ws": "^8.18.2",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.0",
+    "vitest": "^3.2.0"
+  }
+}
