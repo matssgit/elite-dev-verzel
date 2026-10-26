@@ -1,13 +1,13 @@
 # Rotação de credenciais — Sprint 5
 
-Estado em 26/10/2026: **nenhuma das três credenciais foi rotacionada**. Por determinação do responsável, conexão PostgreSQL, token Blob e chave privada Ed25519 anteriores são tratados como potencialmente comprometidos. Não imprimir valores, reutilizá-los como credenciais definitivas nem enviá-los em argumentos. A revisão do histórico Git (cinco commits, 70 caminhos) não encontrou padrões de segredos; isso não elimina exposição em registros de ferramentas fora do Git.
+Estado em 26/10/2026: **fase 1 autorizada pelo responsável; nenhuma das três credenciais foi rotacionada**. A revisão automática rejeitou o transporte por stdin do terminal antes da troca. O cron foi reativado e a manutenção retirada; não manter indisponibilidade enquanto falta o caminho protegido. Por determinação do responsável, as credenciais anteriores são potencialmente comprometidas. Não imprimir valores nem enviá-los em argumentos/entrada de terminal. A busca no histórico Git não elimina exposição em registros externos.
 
 ## Recursos e consumidores
 
 | Credencial | Recurso | Consumidores | Estado |
 |---|---|---|---|
-| Senha SQL | Neon cold-haze-51518470, branch production, papel elite_verzel_owner | API, migrations/seed, função settlement | Rotação pendente de confirmação |
-| Token Blob | store_jAwONeQLbcJmOzGK, prefixo elite-v1/ | API e função; conexão do projeto Vercel | Rotação/revogação pendente de confirmação e acesso ao painel |
+| Senha SQL | Neon cold-haze-51518470, branch production, papel elite_verzel_owner | API, migrations/seed, função settlement | Autorizada; pendente de configuração direta nos painéis |
+| Token Blob | store_jAwONeQLbcJmOzGK, prefixo elite-v1/ | API e função; conexão do projeto Vercel | Autorizada; rotação disponível no painel, ainda não executada |
 | Chave de assinatura | identidade pública em AUDIT_PRODUCTION_PUBLIC_KEY.pem | API, função, verificador e páginas públicas | Transição entre chaves ainda não implementada; troca direta proibida |
 
 ## Fase 1 — SQL e Blob (janela curta, confirmação obrigatória)
@@ -20,7 +20,13 @@ Estado em 26/10/2026: **nenhuma das três credenciais foi rotacionada**. Por det
 6. Redeployar os consumidores com os valores novos, sem eco/arquivo em texto puro/argumentos de shell. Validar autenticação SQL, leitura de checkpoints antigos e escrita de uma prova identificada em prefixo de validação. Confirmar que as credenciais antigas foram recusadas por testes de leitura/autenticação, sem tentar alterar objetos.
 7. Reativar agendamento/escritas e validar login, sala/WS, um lote controlado, liquidação única e comprovante. Não declarar a rotação concluída apenas porque um painel salvou as variáveis. Se houver falha, manter manutenção; não restaurar uma credencial exposta como solução definitiva.
 
-O reset/revogação pode interromper API/cron. **Nenhuma dessas operações foi executada.** Aprovação da opção gratuita não substitui a confirmação de manutenção exigida pela Sprint 5, seção 3.
+O reset/revogação pode interromper API/cron. **Nenhuma dessas operações foi executada.** A confirmação da fase 1 já foi recebida; não pedir outra autorização para o mesmo escopo. A fase 2 continua separada.
+
+### Tentativa autorizada e bloqueio
+
+Em 26/10 às 18:55, o trigger foi pausado e a API recebeu FINANCIAL_MAINTENANCE=true (deploy 9c4f084). Antes de alterar senha/token, a revisão automática rejeitou a injeção por stdin na sessão externa. Não houve reset, rotação Blob nem troca de assinatura. O helper foi encerrado e desativado antes de ler entrada/iniciar filhos. Às 18:57 o trigger voltou a enabled=true e a API recebeu FINANCIAL_MAINTENANCE=false; dep-dbfspblg1s2s73cjddvg ficou live às 18:58. Às 18:59: health 200, ausência de manutenção confirmada por 401 no POST financeiro sem sessão, cinco auditorias INTEGRO, cron às 18:58/18:59 com failures=0. Janela encerrada sem mudança de credenciais. Evidência pública atual em tmp/rotation-audit-baseline.json, ignorada pelo Git.
+
+Alternativa mais simples: configurar as credenciais diretamente nos painéis protegidos. Blob: Storage > elite-dev-verzel-audit > Settings > Rotate Credentials; o painel oferece atraso de expiração e atualiza variáveis dos projetos conectados, mas deployments precisam ser atualizados. Não usar Delete Store. Neon: Postgres > Roles > elite_verzel_owner > Reset password. Copiar os novos valores somente para Environment da API Render e da função settlement (DATABASE_URL e DATABASE_URL_UNPOOLED). No mesmo fluxo, atualizar BLOB_READ_WRITE_TOKEN nos dois consumidores. Manter chave, fingerprint, prefixo e objetos existentes. Credenciais novas não devem passar pela conversa/terminal. O operador precisa concluir a troca nos painéis; o agente prepara manutenção e executa as verificações sem solicitar os valores.
 
 ## Fase 2 — assinatura (implementação/testes e confirmação separados)
 

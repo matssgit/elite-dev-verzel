@@ -1,6 +1,6 @@
 # Deploy — Sprint 4, opção gratuita aprovada
 
-Atualização Sprint 5 (26/10/2026): revalidação pública e retomada do teste concluídas abaixo. Rotação das três credenciais ainda não executada; plano e confirmação obrigatória em SECURITY_ROTATION.md. Não tratar as credenciais anteriores como definitivas nem o status técnico INTEGRO como garantia contra chave comprometida. O modo FINANCIAL_MAINTENANCE foi preparado/testado localmente e permanece desativado em produção.
+Atualização Sprint 5 (26/10/2026): fase 1 SQL/Blob autorizada, mas bloqueada antes da troca por rejeição do transporte de segredos via terminal. Nenhuma credencial foi rotacionada. Manutenção retirada, cron reativado e API live em 9c4f084; health 200 e cinco auditorias conferidas às 18:59. Plano/alternativa direta nos painéis em SECURITY_ROTATION.md. Não tratar credenciais anteriores como definitivas nem INTEGRO como garantia contra chave comprometida. Assinatura continua na fase 2, sem troca.
 
 Aplicação: https://elite-dev-verzel-zmats-projects.vercel.app
 API/health: https://elite-dev-verzel-api.onrender.com/health
@@ -29,7 +29,7 @@ Nenhum serviço pago/upgrade/autoscaling pago autorizado ou criado. Responsável
 - DATABASE_URL usa conexão Neon direta, TLS verify-full. Listener LISTEN/NOTIFY usa conexão dedicada; não trocar pelo pooler de transações/driver HTTP.
 - AUDIT_STORAGE=blob, AUDIT_BLOB_PREFIX=elite-v1/. AUDIT_PRIVATE_KEY e BLOB_READ_WRITE_TOKEN configurados somente nos ambientes protegidos da API/função; AUDIT_PUBLIC_KEY_FINGERPRINT fixa a identidade. Nenhum segredo em VITE_*, Git ou arquivos temporários.
 - RUN_SETTLEMENT_JOBS=false na API. Neon Function executa processDue e a mesma settleAuction diretamente no banco, sem chamar Render. Trigger cron * * * * * (UTC). A presença do header interno Neon é verificada; Neon documenta que remove headers X-Neon-* fornecidos por clientes. POST público sem header retorna 403.
-- Deploy da função: deploy/neon.ts; função existente apenas, sem recriar banco/auth. CLI com sessão no cofre Windows. scripts/with-secret-env.mjs recebe JSON por entrada sem eco, injeta ambiente transitório e redige valores na saída. Não usar segredos em argumentos de shell nem salvar token em workspace.
+- Deploy da função: deploy/neon.ts; função existente apenas, sem recriar banco/auth. CLI com sessão no cofre Windows. O helper antigo with-secret-env.mjs foi desativado antes de ler stdin: revisão automática rejeitou o transporte de segredos pela sessão de terminal, mesmo sem eco. Configurar valores diretamente nos campos protegidos dos provedores; não enviar por terminal, argumentos ou arquivos em texto puro.
 - Antes de aplicar config: neon config plan --config deploy/neon.ts --project-id cold-haze-51518470 --branch production --profile elite-verzel. Publicar com neon deploy e --no-env-pull para preservar .env local e evitar arquivos de credenciais. A configuração lê os segredos do ambiente, não do código.
 - Render auto-deploy está desligado; publicar commit revisado e acionar deploy do serviço explicitamente. Confirmar plan=free em qualquer mudança.
 

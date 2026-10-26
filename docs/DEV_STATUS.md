@@ -8,7 +8,7 @@ Código: https://github.com/matssgit/elite-dev-verzel .
 
 Vercel Hobby, Render Free, Neon Free e Blob privado. Nenhum recurso pago autorizado/criado. Fonte de configuração e limitações: DEPLOY.md. QA independente permanece sob coordenação do responsável; QA_REPORT.md não foi alterado e nenhum subagente/conversa de QA foi acionado.
 
-**Prioridade de segurança:** as três credenciais anteriores de infraestrutura são potencialmente comprometidas por determinação do responsável. Nenhuma rotação concluída. Plano em SECURITY_ROTATION.md; reset/revogação com possível indisponibilidade depende de confirmação expressa. A chave única atual não admite troca direta preservando o histórico; a transição entre chaves ainda precisa ser implementada/testada.
+**Prioridade de segurança:** as três credenciais anteriores são potencialmente comprometidas. Fase 1 (SQL/Blob) expressamente autorizada; nenhuma rotação concluída. O envio por stdin foi rejeitado pela revisão automática; a alternativa é configuração direta nos painéis protegidos. A fase 2 (assinatura) continua separada, sem autorização de corte e sem suporte a múltiplas chaves implementado. Plano em SECURITY_ROTATION.md.
 
 ## Funcionalidades preservadas
 
@@ -36,7 +36,7 @@ Provas da Sprint 4 preservadas: corrida no mesmo lote e entre lotes, liberação
 ## Alterações seguras da Sprint 5
 
 - FINANCIAL_MAINTENANCE preparado, desativado por padrão: bloqueia POST de depósitos/lotes/lances/cancelamentos antes da transação; leituras continuam disponíveis com SQL conectado; worker e Function também respeitam o bloqueio.
-- Mecanismo ainda não ativado em produção; não houve reset de senha, revogação de token, troca de chave ou pausa do cron nesta sprint.
+- Janela autorizada às 18:55: cron pausado e API 9c4f084 implantada com manutenção. A revisão automática bloqueou stdin antes de transmitir os valores; não houve reset de senha/token ou troca de chave. Às 18:57, cron reativado e manutenção retirada; deploy dep-dbfspblg1s2s73cjddvg confirmado live às 18:58. Às 18:59: health 200, POST financeiro sem sessão 401 (sem manutenção), cinco auditorias INTEGRO e cron failures=0. Helper de stdin encerrado e desativado antes de ler entrada/iniciar processos.
 - README consolidado: URLs, arquitetura/regras, variáveis sem valores reais, migrations compiladas, demonstração, concorrência, liquidação, IA/revisão humana e riscos.
 - Documentação de auditoria/delivery separa integridade matemática, confiança da chave e proteção operacional. Nenhum checkpoint foi apagado ou reescrito.
 
@@ -50,7 +50,7 @@ Provas da Sprint 4 preservadas: corrida no mesmo lote e entre lotes, liberação
 
 ## Pendências e bloqueios
 
-1. Confirmação de janela e acesso protegido aos painéis para rotação SQL/Blob. Verificar novos consumidores e revogação real antes de fechar a fase.
+1. Fase 1 já autorizada, bloqueada pelo transporte de segredos. Responsável precisa executar geração/troca diretamente nos painéis protegidos, em nova janela coordenada. Não pedir nova aprovação do mesmo escopo. Verificar consumidores e revogação real antes de fechar a fase.
 2. Implementação/testes da transição criptográfica e confirmação separada antes de trocar a identidade de produção. Não há restauração de autenticidade retroativa de uma chave comprometida.
 3. Suspensão física histórica classificada como inconclusiva; liquidação independente confirmada.
 4. Franquias gratuitas, cold start e indisponibilidade eventual; manter sem upgrade e sem forma de pagamento Render. Não prometer disponibilidade gratuita indefinida.

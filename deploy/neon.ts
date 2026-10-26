@@ -6,4 +6,6 @@ export default defineConfig({functions:{settlement:{name:'Elite auction settleme
   AUDIT_PRIVATE_KEY:process.env.AUDIT_PRIVATE_KEY!,
   AUDIT_PUBLIC_KEY_FINGERPRINT:process.env.AUDIT_PUBLIC_KEY_FINGERPRINT!,
   FINANCIAL_MAINTENANCE:process.env.FINANCIAL_MAINTENANCE??'false',
+  DATABASE_URL:process.env.DATABASE_URL!,
+  DATABASE_URL_UNPOOLED:process.env.DATABASE_URL_UNPOOLED??process.env.DATABASE_URL!,
 }}}});
