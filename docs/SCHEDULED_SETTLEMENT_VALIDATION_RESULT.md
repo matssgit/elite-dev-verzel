@@ -1,5 +1,7 @@
 # Liquidação agendada — interrompida antes do setup
 
+**Diagnóstico posterior, 15:27:** realizado somente o POST neutro autorizado, sem retomar a liquidação. Evidências de versões diferentes atendendo requisições; causa interna ainda aberta. Sessão revogada, fonte normal restaurada, manutenção/cron pausado e dados intactos. Ver [POST_403_DIAGNOSTIC.md](POST_403_DIAGNOSTIC.md). Não interpretar essa coleta como aprovação do ensaio financeiro.
+
 ## Atualização da retomada autorizada — 27/10, 14:59
 
 **O ensaio continua sem disparos reais.** A correção 404 de `5e32a45` foi conferida no Git e em produção: `/health` no Render, `/rotation-readiness` no Neon. Antes de iniciar, nove testes direcionados, TypeScript/lint, cinco históricos/15 checkpoints, snapshot e bloqueios passaram.
