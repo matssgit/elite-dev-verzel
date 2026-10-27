@@ -2,11 +2,12 @@ import { connect } from '../db/client.js';
 import { processDue } from './service.js';
 import { rotationReadiness } from './readiness.js';
 import { auditDiagnostics } from '../audit/diagnostics.js';
+import { versioned } from './function-provenance.js';
 
 // No HTTP call to Render: the scheduled invocation executes the existing DB
 // transactions and publishes the same durable outbox even while Render sleeps.
-export default {
-  async fetch(request:Request):Promise<Response> {
+export default {async fetch(request:Request):Promise<Response>{return versioned(await handle(request));}};
+async function handle(request:Request):Promise<Response> {
     if(request.method==='GET'&&new URL(request.url).pathname==='/audit/diagnostics')return auditDiagnostics();
     if(process.env.AUDIT_RECOVERY_MODE==='true')return Response.json({ok:false,maintenance:true,recovery:true},{status:503});
     if(request.method==='GET'&&new URL(request.url).pathname==='/rotation-readiness')return rotationReadiness();
@@ -22,5 +23,4 @@ export default {
       console.log(JSON.stringify({job:'settlement',scheduledAt:body.data?.scheduled_at,failures}));
       return Response.json({ok:failures===0,failures},{status:failures?503:200});
     }finally{await pool.end();}
-  },
-};
+}

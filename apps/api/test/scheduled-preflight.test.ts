@@ -15,3 +15,8 @@ it('authenticated POST preflight has no setup, control-table, financial or sched
 it('unauthorized POST preflight stays forbidden and cannot prepare anything',async()=>{
   state.authorized=false;const response=await handler.fetch(new Request('https://function.test/scheduled-validation/preflight',{method:'POST'}));expect(response.status).toBe(403);expect(state.financialCalls).toBe(0);expect(state.ended).toBe(1);
 });
+it('version mismatch on prepare/arm/scheduler returns before any DB/service call',async()=>{
+  for(const path of ['/scheduled-validation/prepare','/scheduled-validation/arm','/']){
+    const response=await handler.fetch(new Request('https://function.test'+path,{method:'POST'}));expect(response.status).toBe(409);expect(await response.json()).toMatchObject({code:'FUNCTION_VERSION_MISMATCH'});
+  }expect(state.financialCalls).toBe(0);expect(state.ended).toBe(0);
+});

@@ -4,6 +4,8 @@ import { createHash,randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { readFile,writeFile } from 'node:fs/promises';
 import { verifyReport } from './audit-verification.mjs';
+import { classifyFunctionResponse } from './function-version-verification.mjs';
+import { deploymentMetadata,waitForActiveDeployment } from './neon-deployment-verification.mjs';
 
 // Operator-authorized, ONE RUN ONLY. No retry of fixture preparation/finance.
 // Demo app session stays in memory; only its one-way hash goes to Neon config.
@@ -13,6 +15,8 @@ const fn='https://br-muddy-mud-b80fr83g-settlement.compute.c-14.us-east-1.aws.ne
 const trigger='trigger-81af7a75-3b54-4914-ad70-d410cfb95939';
 const active='07e8ccdec02da616cf480e19a0599271679ed625376bf8968837502b0af94ab2',manifest='126e42c16b21a5b7e3256c507e96eead53bb0a956e94f741928b04505c0e25a1',root='dc3370282c6119b2a77433fc95c0c84fa6868b23f77e8d6ffd7027d872f3ece3';
 const baseline=JSON.parse(await readFile('tmp/audit-final-reports-after-redeploy.json','utf8'));
+const buildId=/FUNCTION_BUILD_ID='([a-f0-9]{64})'/.exec(await readFile('apps/api/src/settlement/function-build.ts','utf8'))?.[1];
+if(!buildId)throw Error('Missing immutable function build pin');
 const ids=Object.keys(baseline),runId=randomUUID(),output='tmp/scheduled-settlement-result.json';
 const result={format:'elite-scheduled-validation/v1',runId,startedAt:new Date().toISOString(),demonstrationOnly:true,realMoneyMoved:false,maintenance:true,events:[],cleanup:{},success:false};
 let token,temporarySource=false,prepareAttempted=false,cronMayBeEnabled=false;
@@ -28,9 +32,17 @@ async function cli(args,env={}){
   });
 }
 async function json(url,init={}){
-  const response=await fetch(url,{...init,signal:AbortSignal.timeout(60000)});assert.equal(response.status,200,`Unexpected HTTP ${response.status} at ${new URL(url).pathname}`);return response.json();
+  const response=await fetch(url,{...init,redirect:'manual',signal:AbortSignal.timeout(60000)});
+  if(url.startsWith(fn+'/scheduled-validation/')){
+    let data;try{data=await response.json();}catch{/* Negative plain-text responses still carry version headers. */}
+    const classification=classifyFunctionResponse({status:response.status,buildId:response.headers.get('x-elite-build-id'),runId:response.headers.get('x-elite-run-id'),protocol:response.headers.get('x-elite-version-protocol'),version:data?.version},{buildId,runId});
+    if(classification==='INCONSISTENT_PROVENANCE')throw Error('Function response integrity mismatch');
+    if(classification==='AUTH_REJECTED')throw Error('Authentication rejected by expected function version');
+    if(classification!=='CURRENT_ACCEPTED')throw Error('Unexpected function version or failed control response');return data;
+  }
+  assert.equal(response.status,200,`Unexpected HTTP ${response.status} at ${new URL(url).pathname}`);return response.json();
 }
-const headers=()=>({authorization:`Bearer ${token}`});
+const headers=()=>({authorization:`Bearer ${token}`,'x-elite-expected-build':buildId,'x-elite-expected-run':runId});
 async function control(path,method='GET'){return json(fn+'/scheduled-validation/'+path,{method,headers:headers()});}
 async function ready(predicate){
   const started=Date.now();let stable=0;
@@ -43,7 +55,7 @@ async function ready(predicate){
       if(predicate(state)&&probe.ok&&probe.nonFinancial&&probe.binding.runId===state.binding.runId&&probe.binding.enabled===state.binding.enabled&&probe.configurationSafe){
         stable++;if(stable>=3&&Date.now()-started>=30000)return state;
       }else stable=0;
-    }catch{stable=0;/* Only bounded nonfinancial readiness probes may repeat. */}
+    }catch(error){if(error.message==='Function response integrity mismatch'||error.message==='Authentication rejected by expected function version')throw error;stable=0;/* Only bounded nonfinancial readiness probes may repeat. */}
     await pause(5000);
   }
   throw Error('Bounded nonfinancial GET/POST readiness timed out');
@@ -60,12 +72,14 @@ async function oldHistories(){
 async function applyConfig(config,env={}){
   // Updating an existing function is explicitly authorized. A successful CLI
   // exit alone does not attest that the selected source actually was applied.
+  const previous=deploymentMetadata(JSON.parse(await cli(['functions','list','--output','json'])));
   const ack=JSON.parse(await cli(['deploy','--config',config,'--update-existing','--no-env-pull','--output','json'],env));
   assert.equal(ack.branchId,'br-muddy-mud-b80fr83g');assert.equal(ack.branchName,'production');assert.equal(ack.dryRun,false);assert.equal(ack.conflicts.length,0);
   const changes=ack.applied.filter(change=>change.action!=='noop');
   assert.ok(changes.some(change=>change.kind==='service'&&change.action==='update'&&change.details?.slug==='settlement'));
   assert.ok(changes.every(change=>change.kind==='service'&&change.details?.slug==='settlement'));
   await record('deployment-confirmed',{config,branch:ack.branchName,slug:'settlement',action:'update'});
+  await waitForActiveDeployment(async()=>JSON.parse(await cli(['functions','list','--output','json'])),{previousId:previous.current.id,url:fn+'/',observe:async metadata=>{await record('deployment-observed',{config,...metadata});}});
 }
 async function deploy(env){await applyConfig('deploy/neon-scheduled-validation.ts',env);}
 try{
