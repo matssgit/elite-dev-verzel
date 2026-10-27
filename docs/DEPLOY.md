@@ -1,5 +1,7 @@
 # Deploy — Sprint 4, opção gratuita aprovada
 
+**21:39 — preparação da chave concluída:** operador gerou/protegeu a chave e o manifesto público foi revisado, com hash aprovado em AUDIT_KEY_ROTATION.md. Nenhum consumidor foi alterado com a nova chave; aplicação nativa Render/Neon é o próximo passo. Quinze checkpoints preservados, manutenção ativa e trigger desativado confirmados antes do handoff.
+
 **Fase 2, 26/10 às 21:23:** código de compatibilidade multichave 9ef6bd9 publicado na API dep-dbfusk942hec73d2qc0g (live), frontend dpl_CNSMn7KcM22VUncHESGL3Sdsebyo (READY) e função. Nenhum segredo de assinatura foi trocado. Cinco auditorias/15 checkpoints e quatro comprovantes preservados; FINANCIAL_MAINTENANCE=true e cron pausado. Próximo passo exige geração/inserção nativa protegida, conforme AUDIT_KEY_ROTATION.md. Não há rotação real concluída nem reativação.
 
 **Atualização operacional, 26/10 às 21:04:** ensaio manual restrito ao lote demo R$50 concluído e repetido sem duplicação. Comprovante https://elite-dev-verzel-zmats-projects.vercel.app/comprovantes/d209288d-6a1c-43a7-a0ec-c8fa5dbc21cc . Cinco lotes liquidados, nenhum pendente; 15 checkpoints, incluindo os 14 antigos intactos, verificados após redeploy de remoção do executor. FINANCIAL_MAINTENANCE=true preservado na API/função, cron enabled=false. Nenhum recurso/plano novo criado. Fase 2 preparada, chave não trocada; sistema não reaberto. Estados abaixo de 20:48 e anteriores são históricos.

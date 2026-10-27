@@ -1,6 +1,6 @@
 # Elite Dev Verzel
 
-Rotação de assinatura em andamento: suporte multichave e fronteiras implementados/testados, aguardando geração protegida da nova chave e corte coordenado. Consulte os [passos nativos da fase 2](docs/AUDIT_KEY_ROTATION.md). Manutenção e cron pausado continuam ativos; a chave antiga ainda não foi substituída.
+Rotação de assinatura em andamento: suporte multichave e fronteiras implementados/testados; chave nova gerada pelo operador e manifesto público revisado, aguardando aplicação coordenada. Consulte os [passos nativos da fase 2](docs/AUDIT_KEY_ROTATION.md). Manutenção e cron pausado continuam ativos; a chave antiga ainda não foi substituída nos consumidores.
 
 Casa de leilões online do desafio técnico Verzel. **Etapa atual: Sprint 5 — segurança e preparação de entrega.** Fluxo de leilões com catálogo/snapshots, lances concorrentes, carteira, anti-sniping, WebSocket, encerramento/liquidação automática, resultados, comprovantes compartilháveis e auditoria pública assinada implementados.
 

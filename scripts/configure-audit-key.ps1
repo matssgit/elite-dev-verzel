@@ -9,6 +9,10 @@ $manifestPath=Join-Path $workspace 'docs/AUDIT_SIGNING_TRANSITION.json'
 $sealedPath=Join-Path $workspace 'var/audit-key-rotation/new-private-key.dpapi'
 $manifestText=Get-Content -LiteralPath $manifestPath -Raw
 $manifest=$manifestText | ConvertFrom-Json
+# Preserve signed JSON string values exactly. PowerShell's JSON date parsing /
+# reserialization can change createdAt; compact only with Node before decryption.
+$compactManifest=& node -e "process.stdout.write(JSON.stringify(JSON.parse(require('node:fs').readFileSync(process.argv[1],'utf8'))))" $manifestPath
+if($LASTEXITCODE -ne 0){throw 'Manifesto publico invalido. Nenhuma chave foi aberta.'}
 $prior=@{}
 foreach($name in @('AUDIT_PRIVATE_KEY','AUDIT_PUBLIC_KEY_FINGERPRINT','AUDIT_TRANSITION_JSON','AUDIT_TRANSITION_SHA256','DEBUG','NODE_DEBUG')){$prior[$name]=[Environment]::GetEnvironmentVariable($name,'Process')}
 $protected=$null;$pointer=[IntPtr]::Zero
@@ -17,7 +21,7 @@ try {
     $pointer=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($protected)
     $env:AUDIT_PRIVATE_KEY=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer).Replace("`r`n","`n").Replace("`n",'\n')
     $env:AUDIT_PUBLIC_KEY_FINGERPRINT=$manifest.activeFingerprint
-    $env:AUDIT_TRANSITION_JSON=$manifest | ConvertTo-Json -Depth 12 -Compress
+    $env:AUDIT_TRANSITION_JSON=$compactManifest
     $env:AUDIT_TRANSITION_SHA256=$ExpectedTransitionHash
     $env:DEBUG=$null;$env:NODE_DEBUG=$null
     & node scripts/verify-audit-transition.mjs $manifestPath $ExpectedTransitionHash
@@ -40,5 +44,5 @@ try {
     if($pointer -ne [IntPtr]::Zero){[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer)}
     if($protected){$protected.Dispose()}
     foreach($name in $prior.Keys){[Environment]::SetEnvironmentVariable($name,$prior[$name],'Process')}
-    $manifest=$null;$manifestText=$null
+    $manifest=$null;$manifestText=$null;$compactManifest=$null
 }
