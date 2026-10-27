@@ -1,0 +1,176 @@
+{
+  "format": "elite-scheduled-validation-result/v1",
+  "status": "STOPPED_BEFORE_SETUP",
+  "startedAt": "2026-10-27T17:39:50.816Z",
+  "checkedAt": "2026-10-27T17:42:43.987Z",
+  "unusedRunId": "eeca97b5-f360-4292-bc7b-0d9d75189b26",
+  "cause": "Incorrect /rotation-readiness request to Render returned 404; route exists only in Neon. Corrected locally; no test retry.",
+  "testExecuted": false,
+  "fixtureCreated": false,
+  "newCheckpoints": 0,
+  "deploymentsMade": 0,
+  "cronWasEnabled": false,
+  "permitCreated": false,
+  "financialMaintenance": true,
+  "publicFinancialRoutesBlocked": true,
+  "runSettlementJobs": false,
+  "jobsConfigurationPreservedWithoutDeploy": true,
+  "temporaryModeArmed": false,
+  "historicalCheckpoints": 15,
+  "oldRecordsAndSignaturesUnchanged": true,
+  "financialSnapshotUnchanged": true,
+  "blocks": [
+    {
+      "path": "/wallet/deposits",
+      "status": 503
+    },
+    {
+      "path": "/auctions",
+      "status": 503
+    },
+    {
+      "path": "/auctions/00000000-0000-4000-8000-000000000100/bids",
+      "status": 503
+    },
+    {
+      "path": "/auctions/00000000-0000-4000-8000-000000000100/cancel",
+      "status": 503
+    }
+  ],
+  "receipts": [
+    {
+      "id": "d209288d-6a1c-43a7-a0ec-c8fa5dbc21cc",
+      "amountCents": 5000,
+      "verification": "INTEGRO"
+    },
+    {
+      "id": "b4cca429-9a44-4a70-afee-1c796cdbac9f",
+      "amountCents": 1100,
+      "verification": "INTEGRO"
+    },
+    {
+      "id": "6fc66f24-e4f4-4a20-8cab-34028b422b78",
+      "amountCents": 7000,
+      "verification": "INTEGRO"
+    },
+    {
+      "id": "fc05d6d1-cd77-4720-9fa7-2a5e5ba47ee6",
+      "amountCents": 1000,
+      "verification": "INTEGRO"
+    }
+  ],
+  "apiHealth": {
+    "status": "ok",
+    "serverTime": "2026-10-27T17:43:00.764Z"
+  },
+  "functionReadiness": {
+    "ok": true,
+    "maintenance": true,
+    "database": true,
+    "financialInvariants": true,
+    "financialSnapshotMatchesIncidentBaseline": true,
+    "pendingSettlements": 0,
+    "settledAuctions": 5,
+    "preRotationConnections": 0,
+    "migrations": 3,
+    "blobRead": true,
+    "blobWriteProbe": true,
+    "fingerprint": "07e8ccdec02da616cf480e19a0599271679ed625376bf8968837502b0af94ab2",
+    "activeFingerprint": "07e8ccdec02da616cf480e19a0599271679ed625376bf8968837502b0af94ab2",
+    "transition": {
+      "version": 1,
+      "scope": "elite-audit-key-transition",
+      "id": "dc38b398-9f20-48e3-8851-e095e618cb46",
+      "createdAt": "2026-10-27T16:27:58.878Z",
+      "namespace": "elite-v1/",
+      "legacyPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAQvE/PRSYHyAVShFtXIcp8aSUssJKmVpyNoxpDWnbpeA=\n-----END PUBLIC KEY-----\n",
+      "legacyFingerprint": "dc3370282c6119b2a77433fc95c0c84fa6868b23f77e8d6ffd7027d872f3ece3",
+      "legacyKeyStatus": "potentially-compromised",
+      "activePublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAdcqrlL16c5GmN8dmF4jTqFjhZBM27eCRMLBDEkSGJYQ=\n-----END PUBLIC KEY-----\n",
+      "activeFingerprint": "07e8ccdec02da616cf480e19a0599271679ed625376bf8968837502b0af94ab2",
+      "boundaries": [
+        {
+          "auctionId": "00000000-0000-4000-8000-000000000100",
+          "sequence": 2,
+          "hash": "d64660dda46b0ce5a55d512f65ca13a7603fa9b19788d0c5c1e56be975af3b5d"
+        },
+        {
+          "auctionId": "30ae384d-0b99-4430-8dca-131f51e7bd41",
+          "sequence": 3,
+          "hash": "fcfb8418682af7ce6e1c0e96534e3c84799b02427bbf85ec79ea58da4ae1bf39"
+        },
+        {
+          "auctionId": "87f4ae5d-aab5-49e7-83f2-77bd2ba4fd39",
+          "sequence": 1,
+          "hash": "5dd762a2cc40cc3dfa9758bed5640e606bdb66880aa17901f3467704f612cca3"
+        },
+        {
+          "auctionId": "8e1b798d-0654-4f4e-b514-933f4d4b7bf7",
+          "sequence": 2,
+          "hash": "b26500214cff43a7a0b78edb281a82565ebf4cd22588f4cac20e4377fa606143"
+        },
+        {
+          "auctionId": "c2eaa536-a502-4dfa-9f2b-1511b082bba3",
+          "sequence": 2,
+          "hash": "88ce7c3ac36b7356965637c2e2e9fd190be0782510b20498cd31b6773334f6f6"
+        }
+      ],
+      "signature": "VH6fovNs+0/jBjhHh0D7iN3y+doZPFaAW2QR/wnyWX1CGQEiJt6sRDzVPTdr+ElB6C51uj4/lcNNs13vSrARAQ=="
+    },
+    "transitionHash": "126e42c16b21a5b7e3256c507e96eead53bb0a956e94f741928b04505c0e25a1",
+    "keyring": [
+      {
+        "fingerprint": "dc3370282c6119b2a77433fc95c0c84fa6868b23f77e8d6ffd7027d872f3ece3",
+        "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAQvE/PRSYHyAVShFtXIcp8aSUssJKmVpyNoxpDWnbpeA=\n-----END PUBLIC KEY-----\n",
+        "status": "historical-potentially-compromised"
+      },
+      {
+        "fingerprint": "07e8ccdec02da616cf480e19a0599271679ed625376bf8968837502b0af94ab2",
+        "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAdcqrlL16c5GmN8dmF4jTqFjhZBM27eCRMLBDEkSGJYQ=\n-----END PUBLIC KEY-----\n",
+        "status": "active"
+      }
+    ],
+    "signingProof": {
+      "payload": {
+        "scope": "elite-audit-key-readiness",
+        "version": 1,
+        "activeFingerprint": "07e8ccdec02da616cf480e19a0599271679ed625376bf8968837502b0af94ab2",
+        "transitionHash": "126e42c16b21a5b7e3256c507e96eead53bb0a956e94f741928b04505c0e25a1"
+      },
+      "hash": "b2f3233326624da6f7b5fe4feb3f2148a251e9e078318bfb229e965ab0587c99",
+      "signature": "/bTQKiURAOx20Zb2suYKLplesNB1ECekotsgnlNzhS8XDhpHhRgzWKnhO9dbL6/AakpgJ6LU7GvXal72TG8MDg=="
+    },
+    "existingSigningProofVerified": true,
+    "existingTransitionArtifactsVerified": true,
+    "automaticSettlementExecuted": false
+  },
+  "finalTrigger": {
+    "type": "schedule",
+    "trigger_id": "trigger-81af7a75-3b54-4914-ad70-d410cfb95939",
+    "function_slug": "settlement",
+    "name": "elite-settlement-minute",
+    "function_path": "/",
+    "schedule": {
+      "cron": "* * * * *"
+    },
+    "enabled": false,
+    "version": 9841168,
+    "next_run_at": null,
+    "inherited": false
+  },
+  "localValidation": {
+    "fullRegressionPassed": 78,
+    "directedPassedAfterAdditionalTest": 7,
+    "typecheck": true,
+    "lint": true,
+    "build": true
+  },
+  "productionValidationPending": [
+    "first real scheduled tick",
+    "unique debit/credit and released reserve",
+    "new receipt and checkpoint",
+    "second real tick idempotency",
+    "new checkpoint persistence after deploy"
+  ],
+  "resumptionRequiresNewAuthorization": true
+}

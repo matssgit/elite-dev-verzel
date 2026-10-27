@@ -128,4 +128,3 @@ export async function status(pool:Pool,id:string){return withRun(pool,id,async r
   if(run.auctionId&&run.depositId)try{evidence=verifyFixture(snapshot,run,Boolean(run.receiptId));}catch{verificationFailed=true;}
   return {run,evidence,verificationFailed,maintenance:true,jobs:false,binding:configuredBinding(),configurationSafe:configurationSafe()};
 });}
-

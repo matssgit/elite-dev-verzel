@@ -1,4 +1,4 @@
-/* global fetch, AbortSignal, process, console, setTimeout */
+/* global fetch, AbortSignal, process, console, setTimeout, URL */
 import assert from 'node:assert/strict';
 import { createHash,randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
@@ -7,6 +7,7 @@ import { verifyReport } from './audit-verification.mjs';
 
 // Operator-authorized, ONE RUN ONLY. No retry of fixture preparation/finance.
 // Demo app session stays in memory; only its one-way hash goes to Neon config.
+if(!process.argv.includes('--execute-authorized-plan'))throw Error('Explicit authorized-plan execution flag required; do not retry after a failed run without operator authorization');
 const api='https://elite-dev-verzel-api.onrender.com',web='https://elite-dev-verzel-zmats-projects.vercel.app';
 const fn='https://br-muddy-mud-b80fr83g-settlement.compute.c-14.us-east-1.aws.neon.tech';
 const trigger='trigger-81af7a75-3b54-4914-ad70-d410cfb95939';
@@ -27,7 +28,7 @@ async function cli(args,env={}){
   });
 }
 async function json(url,init={}){
-  const response=await fetch(url,{...init,signal:AbortSignal.timeout(60000)});assert.equal(response.status,200,`Unexpected HTTP ${response.status}`);return response.json();
+  const response=await fetch(url,{...init,signal:AbortSignal.timeout(60000)});assert.equal(response.status,200,`Unexpected HTTP ${response.status} at ${new URL(url).pathname}`);return response.json();
 }
 const headers=()=>({authorization:`Bearer ${token}`});
 async function control(path,method='GET'){return json(fn+'/scheduled-validation/'+path,{method,headers:headers()});}
@@ -41,13 +42,15 @@ async function maintenance(){
   }
 }
 async function oldHistories(){
-  let count=0;for(const id of ids){const report=await json(api+'/audit/'+id);assert.equal(report.status,'INTEGRO');verifyReport(report,root,manifest);assert.deepEqual(report.records,baseline[id].records);assert.deepEqual(report.checkpoints,baseline[id].checkpoints);count+=report.checkpoints.length;}
+  let count=0;for(const id of ids){const report=await json(api+'/audit/'+id);assert.equal(report.status,'INTEGRO');assert.equal(report.fingerprint,active);verifyReport(report,root,manifest);assert.deepEqual(report.records,baseline[id].records);assert.deepEqual(report.checkpoints,baseline[id].checkpoints);count+=report.checkpoints.length;}
   assert.equal(count,15);return count;
 }
 async function deploy(env){await cli(['deploy','--config','deploy/neon-scheduled-validation.ts','--no-env-pull'],env);}
 try{
   assert.equal(ids.length,5);await maintenance();await oldHistories();
-  for(const target of [api,fn]){const check=await json(target+'/rotation-readiness');assert.equal(check.ok,true);assert.equal(check.maintenance,true);assert.equal(check.fingerprint,active);assert.equal(check.transitionHash,manifest);assert.equal(check.financialInvariants,true);assert.equal(check.financialSnapshotMatchesIncidentBaseline,true);}
+  // This diagnostic belongs to the Neon function, not the normal Render API.
+  const check=await json(fn+'/rotation-readiness');assert.equal(check.ok,true);assert.equal(check.maintenance,true);assert.equal(check.fingerprint,active);assert.equal(check.transitionHash,manifest);assert.equal(check.financialInvariants,true);assert.equal(check.financialSnapshotMatchesIncidentBaseline,true);
+  assert.equal((await json(api+'/health')).status,'ok');
   const triggers=JSON.parse(await cli(['triggers','list','--output','json']));assert.equal(triggers.length,1);assert.equal(triggers[0].trigger_id,trigger);assert.equal(triggers[0].enabled,false);
   const session=await json(api+'/auth/login',{method:'POST',headers:{origin:web,'content-type':'application/json'},body:JSON.stringify({email:'leiloeiro@demo.local',password:'DemoVerzel2026!'})});token=session.token;assert.match(token,/^[a-f0-9]{64}$/);
   const env={SCHEDULED_VALIDATION_RUN_ID:runId,SCHEDULED_VALIDATION_SESSION_HASH:createHash('sha256').update(token).digest('hex'),SCHEDULED_VALIDATION_ENABLED:'false'};
@@ -89,7 +92,8 @@ finally{
 try{
   await maintenance();result.finalHistoricalCheckpoints=await oldHistories();
   const triggers=JSON.parse(await cli(['triggers','list','--output','json']));assert.equal(triggers[0].enabled,false);assert.equal(triggers[0].next_run_at,null);result.finalTrigger=triggers[0];
-  for(const target of [api,fn]){const check=await json(target+'/rotation-readiness');assert.equal(check.ok,true);assert.equal(check.financialInvariants,true);assert.equal(check.maintenance,true);assert.equal(check.fingerprint,active);result[target===api?'apiReadiness':'functionReadiness']=check;}
+  const check=await json(fn+'/rotation-readiness');assert.equal(check.ok,true);assert.equal(check.financialInvariants,true);assert.equal(check.maintenance,true);assert.equal(check.fingerprint,active);result.functionReadiness=check;
+  result.apiHealth=await json(api+'/health');assert.equal(result.apiHealth.status,'ok');
   const removed=await fetch(fn+'/scheduled-validation/status',{signal:AbortSignal.timeout(60000)});assert.equal(removed.status,405);result.cleanup.temporarySourceUnavailable=true;
   if(result.settlement){
     const run=result.settlement.run,report=await json(api+'/audit/'+run.auctionId);verifyReport(report,root,manifest);assert.equal(report.status,'INTEGRO');assert.equal(report.records.length,3);assert.equal(report.checkpoints.length,3);assert.ok(report.signatureKeys.every(k=>k.fingerprint===active));result.newAudit=report;
