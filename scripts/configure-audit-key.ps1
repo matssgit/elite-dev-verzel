@@ -3,6 +3,7 @@
 param([Parameter(Mandatory=$true)][ValidatePattern('^[a-f0-9]{64}$')][string]$ExpectedTransitionHash)
 $ErrorActionPreference='Stop'
 if([Console]::IsInputRedirected -or $Host.Name -ne 'ConsoleHost'){throw 'Use um PowerShell NATIVO interativo.'}
+. (Join-Path $PSScriptRoot 'protected-clipboard.ps1')
 $workspace=Split-Path -Parent $PSScriptRoot
 if((Resolve-Path -LiteralPath (Get-Location).Path).Path -ne (Resolve-Path -LiteralPath $workspace).Path){throw 'Execute na raiz do repositorio.'}
 $manifestPath=Join-Path $workspace 'docs/AUDIT_SIGNING_TRANSITION.json'
@@ -28,10 +29,7 @@ try {
     if($LASTEXITCODE -ne 0){throw 'Verificacao falhou. Nenhum deploy iniciado.'}
     Write-Host 'Render > elite-dev-verzel-api > Environment > Edit. Preserve FINANCIAL_MAINTENANCE=true e RUN_SETTLEMENT_JOBS=false.'
     foreach($name in @('AUDIT_PRIVATE_KEY','AUDIT_PUBLIC_KEY_FINGERPRINT','AUDIT_TRANSITION_JSON','AUDIT_TRANSITION_SHA256')){
-        Set-Clipboard -Value ([Environment]::GetEnvironmentVariable($name,'Process'))
-        Write-Host "Cole no campo de valor de $name no Render. O valor foi copiado sem ser impresso."
-        $null=Read-Host 'Pressione Enter depois de colar; NAO cole valores neste terminal'
-        Set-Clipboard -Value ''
+        Copy-ProtectedClipboardField -Name $name -Value ([Environment]::GetEnvironmentVariable($name,'Process'))
     }
     Write-Host 'Salve e execute Save, rebuild, and deploy no Render. Nao retire manutencao.'
     $ready=Read-Host 'Quando o deploy Render terminar, digite APLICAR para atualizar a funcao Neon'
@@ -40,7 +38,7 @@ try {
     if($LASTEXITCODE -ne 0){throw 'Deploy Neon nao concluido. Mantenha manutencao e informe somente o erro sem segredos.'}
     Write-Host 'Configuracao enviada. Avise o agente para verificar ambos os consumidores. Cron e manutencao nao foram reativados.'
 }finally{
-    Set-Clipboard -Value ''
+    try{Set-Clipboard -Value '' -ErrorAction Stop}catch{Write-Warning 'Limpe a area de transferencia manualmente. Os valores temporarios do processo serao descartados.'}
     if($pointer -ne [IntPtr]::Zero){[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer)}
     if($protected){$protected.Dispose()}
     foreach($name in $prior.Keys){[Environment]::SetEnvironmentVariable($name,$prior[$name],'Process')}
