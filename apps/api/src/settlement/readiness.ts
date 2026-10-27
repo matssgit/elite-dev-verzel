@@ -52,8 +52,10 @@ export async function rotationReadiness():Promise<Response> {
       if(!/^[a-f0-9-]{36}$/.test(probeId))throw new Error('Invalid probe id');
       stage='blob-write';const probes=new BlobCheckpoints(token,'rotation-probes/');
       const body=JSON.stringify({version:1,probeId,fingerprint});
-      await probes.writeOnce(`${probeId}.json`,body);
-      if(await probes.read(`${probeId}.json`)!==body)throw new Error('Probe readback mismatch');
+      // A changed signer must not overwrite the earlier credential probe.
+      const path=`${probeId}${identity?.transition?`-${fingerprint}`:''}.json`;
+      await probes.writeOnce(path,body);
+      if(await probes.read(path)!==body)throw new Error('Probe readback mismatch');
       probeWritten=true;
     }
     return Response.json({ok:true,maintenance:true,database:true,financialInvariants:true,pendingSettlements:Number(stats.pending),settledAuctions:Number(stats.settled),preRotationConnections:Number(stats.old_connections),migrations:Number(stats.migrations),blobRead:true,blobWriteProbe:probeWritten,fingerprint,...identity?.trustMetadata,automaticSettlementExecuted:false});
