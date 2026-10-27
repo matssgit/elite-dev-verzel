@@ -13,6 +13,7 @@ export default {async fetch(request:Request):Promise<Response>{
     const binding=configuredBinding();
     if(path==='/'){const occurrence=scheduledIdentity(request,await request.json());const result=await tick(db,pool,binding,occurrence);console.log(JSON.stringify({job:'scheduled-validation',runId:binding.runId,...occurrence,outcome:result.outcome,admitted:result.run.admitted}));return Response.json({ok:result.outcome!=='failed',outcome:result.outcome},{status:result.outcome==='failed'?503:200});}
     if(!await operatorAuthorized(db,request))return new Response('Forbidden',{status:403});
+    if(path==='/scheduled-validation/preflight'&&request.method==='POST')return Response.json({ok:true,nonFinancial:true,binding,configurationSafe:true,maintenance:true,jobs:false},{headers:{'cache-control':'no-store'}});
     if(path==='/scheduled-validation/status'&&request.method==='GET'){
       // Readiness before fixture creation must not implicitly create a run.
       const exists=await pool.query("SELECT to_regclass('scheduled_validation_runs') AS name");

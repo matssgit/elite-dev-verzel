@@ -33,8 +33,20 @@ async function json(url,init={}){
 const headers=()=>({authorization:`Bearer ${token}`});
 async function control(path,method='GET'){return json(fn+'/scheduled-validation/'+path,{method,headers:headers()});}
 async function ready(predicate){
-  for(let i=0;i<12;i++){try{const state=await control('status');if(predicate(state))return state;}catch{/* Read-only cold-start polling only. */}await pause(5000);}
-  throw Error('Bounded read-only function readiness timed out');
+  const started=Date.now();let stable=0;
+  for(let i=0;i<12;i++){
+    try{
+      const state=await control('status');
+      // Same POST authentication path as preparation, with no setup, DDL,
+      // permit or financial write. Do not infer POST readiness from GET alone.
+      const probe=await control('preflight','POST');
+      if(predicate(state)&&probe.ok&&probe.nonFinancial&&probe.binding.runId===state.binding.runId&&probe.binding.enabled===state.binding.enabled&&probe.configurationSafe){
+        stable++;if(stable>=3&&Date.now()-started>=30000)return state;
+      }else stable=0;
+    }catch{stable=0;/* Only bounded nonfinancial readiness probes may repeat. */}
+    await pause(5000);
+  }
+  throw Error('Bounded nonfinancial GET/POST readiness timed out');
 }
 async function maintenance(){
   for(const path of ['/wallet/deposits','/auctions','/auctions/00000000-0000-4000-8000-000000000100/bids','/auctions/00000000-0000-4000-8000-000000000100/cancel']){
@@ -104,7 +116,9 @@ try{
   const triggers=JSON.parse(await cli(['triggers','list','--output','json']));assert.equal(triggers[0].enabled,false);assert.equal(triggers[0].next_run_at,null);result.finalTrigger=triggers[0];
   const check=await json(fn+'/rotation-readiness');assert.equal(check.ok,true);assert.equal(check.financialInvariants,true);assert.equal(check.maintenance,true);assert.equal(check.fingerprint,active);result.functionReadiness=check;
   result.apiHealth=await json(api+'/health');assert.equal(result.apiHealth.status,'ok');
-  const removed=await fetch(fn+'/scheduled-validation/status',{signal:AbortSignal.timeout(60000)});assert.equal(removed.status,405);result.cleanup.temporarySourceUnavailable=true;
+  let removed=false;
+  for(let i=0;i<12;i++){const response=await fetch(fn+'/scheduled-validation/status?closed='+Date.now(),{headers:{'cache-control':'no-cache'},signal:AbortSignal.timeout(20000)});if(response.status===405){removed=true;break;}await pause(5000);}
+  assert.ok(removed,'Temporary route still visible after bounded restoration observation');result.cleanup.temporarySourceUnavailable=true;
   if(result.settlement){
     const run=result.settlement.run,report=await json(api+'/audit/'+run.auctionId);verifyReport(report,root,manifest);assert.equal(report.status,'INTEGRO');assert.equal(report.records.length,3);assert.equal(report.checkpoints.length,3);assert.ok(report.signatureKeys.every(k=>k.fingerprint===active));result.newAudit=report;
     const receipt=await json(api+'/receipts/'+run.receiptId);assert.equal(receipt.amountCents,1000);assert.equal(receipt.verification,'INTEGRO');assert.equal(receipt.signingFingerprint,active);result.receipt=receipt;

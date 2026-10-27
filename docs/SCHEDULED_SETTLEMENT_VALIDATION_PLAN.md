@@ -2,6 +2,8 @@
 
 **Execução autorizada pelo usuário em 27/10/2026**, exclusivamente neste escopo e sem reabertura financeira. A preparação original deste plano não executou alterações; a implementação e as verificações locais posteriores à autorização estão registradas no relatório do ensaio. FINANCIAL_MAINTENANCE permanece ativa durante todo o procedimento.
 
+Retomada autorizada posteriormente: preflight corrigido passou, mas o POST de preparação foi rejeitado com 403. Procedimento interrompido sem fixture/disparos e sem repetição financeira; fonte normal restaurada e cron pausado. Antes de nova tentativa financeira, diagnosticar autenticação somente com POST neutro sem efeitos, conforme SCHEDULED_SETTLEMENT_VALIDATION_RESULT.md. Não interpretar a autorização anterior como permissão de repetir o setup recusado.
+
 ## Escopo proposto
 
 Uma única liquidação de **R$10,00 simulados**, em lote novo e com comprador/vendedor exclusivos do teste. Mesmos PostgreSQL, worker, chave ativa e Blob já usados na demonstração. Nenhuma integração de pagamento ou dinheiro real. Nenhum recurso pago, upgrade, troca de chave ou transferência de segredo.

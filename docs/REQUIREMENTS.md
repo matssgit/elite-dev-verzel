@@ -1,5 +1,7 @@
 # Matriz de requisitos
 
+27/10 às 14:59: retomada autorizada interrompida por 403 na preparação, após GET autenticado. Nenhuma fixture/transferência/checkpoint novo e cron nunca habilitado. Produção agendada com chave nova continua pendente. Fonte normal restaurada, manutenção/bloqueios preservados, 15 históricos/snapshot e quatro comprovantes intactos. Contenções locais e diagnóstico POST neutro preparados; 11/11 direcionados, TypeScript/lint/build. Não declarar o ensaio aprovado; causa de autorização ainda não comprovada. Ver SCHEDULED_SETTLEMENT_VALIDATION_RESULT.md.
+
 27/10 às 14:42: tentativa autorizada de validação agendada interrompida no preflight por rota incorreta no orquestrador, antes de setup/deploy/ativação. Correção local pronta; nenhuma liquidação ou checkpoint novo. Contenções locais aprovadas; agendamento com a chave nova permanece **pendente de execução em produção**. Quinze históricos/snapshot e quatro comprovantes preservados; manutenção e cron pausado confirmados. Ver SCHEDULED_SETTLEMENT_VALIDATION_RESULT.md. Não ampliar o estado Validado com base somente nos testes locais.
 
 27/10 às 14:00: rotação aplicada/verificada em Render e Neon, chave ativa 07e8…94ab2, manifesto aprovado e fronteiras multichave. Quinze checkpoints/assinaturas históricos, quatro comprovantes e prova nova validados após redeploy, sem recriação dos artefatos e sem mudança do snapshot financeiro. Manutenção financeira ativa, jobs desligados e cron pausado; reabertura depende de autorização.

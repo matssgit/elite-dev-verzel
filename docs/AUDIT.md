@@ -1,5 +1,7 @@
 # Auditoria: algoritmo, confiança e limites
 
+**27/10, 14:59 — retomada bloqueada na autenticação POST:** GET de controle aceito, mas prepare retornou 403. Interrompido sem repetição financeira, fixture, liquidação ou checkpoint novo. Fonte normal restaurada/405 e cron nunca ativado; 15 históricos/assinaturas e snapshot iguais, quatro comprovantes íntegros, manutenção ativa. Diagnóstico neutro preparado localmente; causa do 403 não estabelecida. Não há prova de disparo agendado ou novo SETTLE. Evidências em SCHEDULED_SETTLEMENT_VALIDATION_RESULT.md/.json.
+
 **27/10, 14:42 — ensaio agendado interrompido no preflight:** não houve fixture, deploy, liquidação ou checkpoint novo. Erro de rota do orquestrador corrigido; nenhuma nova tentativa após a falha. Os 15 checkpoints/assinaturas e o snapshot financeiro permanecem idênticos. Chave nova/prova e quatro comprovantes conferidos; manutenção ativa e cron pausado. Contenções locais prontas, validação pelo agendador real ainda pendente. Evidências: [SCHEDULED_SETTLEMENT_VALIDATION_RESULT.md](SCHEDULED_SETTLEMENT_VALIDATION_RESULT.md).
 
 **Estado atual, 27/10 às 14:00:** chave ativa 07e8…94ab2 verificada em Render/Neon, com manifesto aprovado, assinaturas históricas e prova nova conferidas independentemente. Quinze checkpoints/assinaturas originais e quatro comprovantes preservados após redeploy que recusa recriação de objetos ausentes. Manutenção financeira ativa e cron pausado. Evidências, pins completos, caminhos remotos e recuperação em [AUDIT_KEY_VERIFICATION.md](AUDIT_KEY_VERIFICATION.md).

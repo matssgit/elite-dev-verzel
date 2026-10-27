@@ -1,5 +1,7 @@
 # Elite Dev Verzel
 
+**27/10, 14:59 — retomada bloqueada antes da fixture:** POST de preparação rejeitado com 403 após GET autenticado; interrompido sem repetir movimentações. Fonte normal restaurada, cron nunca habilitado, manutenção e bloqueios ativos. Snapshot, 15 checkpoints e quatro comprovantes preservados. Agendamento real ainda pendente; [evidências e diagnóstico seguro](docs/SCHEDULED_SETTLEMENT_VALIDATION_RESULT.md).
+
 **27/10, 14:42 — ensaio agendado interrompido antes do setup:** preflight corrigido após HTTP 404 em rota consultada no serviço errado. Nenhuma movimentação, fixture, deploy ou ativação do cron. Quinze históricos e quatro comprovantes preservados; manutenção ativa. Contenções locais testadas; execução real aguarda nova autorização conforme a condição de parada. [Evidências e pendências](docs/SCHEDULED_SETTLEMENT_VALIDATION_RESULT.md).
 
 **27/10 — rotação da assinatura verificada:** Render e Neon utilizam a chave nova 07e8…94ab2. Quinze checkpoints/assinaturas históricas e quatro comprovantes preservados; manifesto e prova nova conferidos após redeploy sem recriação. **Manutenção financeira ativa e cron pausado, aguardando autorização.** Evidências, pins e recuperação em [AUDIT_KEY_VERIFICATION](docs/AUDIT_KEY_VERIFICATION.md).

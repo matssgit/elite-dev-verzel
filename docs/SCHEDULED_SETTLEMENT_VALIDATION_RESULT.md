@@ -1,5 +1,34 @@
 # Liquidação agendada — interrompida antes do setup
 
+## Atualização da retomada autorizada — 27/10, 14:59
+
+**O ensaio continua sem disparos reais.** A correção 404 de `5e32a45` foi conferida no Git e em produção: `/health` no Render, `/rotation-readiness` no Neon. Antes de iniciar, nove testes direcionados, TypeScript/lint, cinco históricos/15 checkpoints, snapshot e bloqueios passaram.
+
+A primeira etapa de implantação não tornou a rota temporária disponível dentro do prazo limitado; nenhuma fixture foi criada. O comando passou a exigir `--update-existing` e confirmação JSON de branch/função realmente atualizadas, sem aceitar somente exit code zero (`4cbef23`). Essa correção de infraestrutura foi feita antes de qualquer tentativa financeira, preservando a autorização para o primeiro setup.
+
+Na execução `d19c5a55-dc0e-44c5-9afa-63b500c6ff57`:
+
+| Horário UTC | Evidência |
+|---|---|
+| 17:54:47 | Início do orquestrador |
+| 17:55:00 | Atualização de settlement/production confirmada pela CLI em JSON |
+| 17:55:02 | GET autenticado passou; 15 históricos/pins, manutenção e cron pausado conferidos |
+| Antes de 17:55:08 | POST `/scheduled-validation/prepare` rejeitado com HTTP 403; nenhuma repetição financeira |
+| 17:55:08 | Restauração da fonte normal confirmada pela CLI; sessão dedicada revogada |
+| 17:59:33 | Conferência final: rota temporária 405, snapshot idêntico, 15 checkpoints/assinaturas preservados, quatro comprovantes íntegros e quatro rotas financeiras 503 |
+
+**Não houve criação das contas, depósito, lote, lance, liquidação ou checkpoint novo.** O 403 ocorre antes da chamada de preparação no handler; a invariância integral do snapshot foi confirmada depois. Não houve primeiro ou segundo disparo: trigger continuou `enabled=false`, `next_run_at=null`, versão `9841168`, sem qualquer habilitação. Não houve compensação, recurso pago ou exposição de segredo. Manutenção continua true; jobs false preservados. A fonte temporária foi removida, confirmada por HTTP 405; o modo não chegou a ser armado.
+
+A chamada para fechar o run também foi rejeitada; por isso o orquestrador registra `runClosed=false`, sem mascarar o resultado. Não foi possível confirmar fechamento pela rota de controle. Entretanto, nenhuma fixture foi criada, a sessão foi revogada, o cron nunca foi ativado e o consumidor voltou à fonte normal, que bloqueia liquidação em manutenção.
+
+**Causa do 403 ainda não comprovada.** Após a confirmação da restauração pela CLI, a rota temporária ainda respondeu 403 e depois voltou a 405 sem outro deploy. Isso demonstra que o reconhecimento da implantação não bastou para confirmar imediatamente a fonte servida. Propagação entre versões/ambientes é uma hipótese para a diferença entre GET aceito e POST recusado, não uma causa estabelecida.
+
+Preparado somente localmente: POST autenticado `/scheduled-validation/preflight`, sem setup, DDL, permissão ou escrita financeira; orquestrador exige GET e POST neutro consistentes em verificações sucessivas por pelo menos 30 segundos antes de permitir preparação. A restauração agora observa 405 com tentativas limitadas. Essa mitigação **não foi implantada/testada em produção** depois da rejeição de autorização. Não se deve repetir o POST financeiro para investigar o problema.
+
+Após a interrupção: **11/11 testes direcionados**, TypeScript, lint e build aprovados. A regressão completa 78/78 anterior permanece registrada abaixo; não foi repetida inteira nesta retomada. Evidências atuais em [SCHEDULED_SETTLEMENT_VALIDATION_RESULT.json](SCHEDULED_SETTLEMENT_VALIDATION_RESULT.json). Próximo passo seguro é diagnosticar o POST neutro em produção, com manutenção ativa/cron pausado, antes de solicitar nova tentativa financeira. Não há instrução para fornecer credenciais pela conversa.
+
+## Registro da tentativa anterior
+
 Em 27/10/2026, o usuário autorizou somente SCHEDULED_SETTLEMENT_VALIDATION_PLAN.md, exigindo interrupção em caso de falha e proibindo novas tentativas financeiras automáticas. A pré-verificação iniciou às 17:39:50 UTC e interrompeu antes de qualquer setup, deploy ou ativação do cron.
 
 ## Resultado efetivo
