@@ -1,5 +1,5 @@
 import { generateKeyPairSync,sign,randomUUID } from 'node:crypto';
-import { beforeEach,it,expect,vi } from 'vitest';
+import { beforeEach,afterEach,it,expect,vi } from 'vitest';
 import type { AuditRecord,AuditTransition } from '@elite/shared';
 const state=vi.hoisted(()=>({objects:new Map<string,string>()}));
 vi.mock('@vercel/blob',()=>({
@@ -23,6 +23,15 @@ beforeEach(async()=>{
   for(const r of original)await legacy.publish(r);
   transition={version:1,scope:'elite-audit-key-transition',id:randomUUID(),createdAt:new Date().toISOString(),namespace:prefix,legacyPublicKey:old.publicKey,legacyFingerprint:old.fp,legacyKeyStatus:'potentially-compromised',activePublicKey:next.publicKey,activeFingerprint:next.fp,boundaries:[{auctionId:id,sequence:1,hash:bid.hash}],signature:''};
   transition.signature=sign(null,Buffer.from(digest(transitionUnsigned(transition)),'hex'),next.privateKey).toString('base64');
+});
+afterEach(()=>vi.unstubAllEnvs());
+it('requires preexisting transition artifacts and never recreates a missing guard/key/manifest',async()=>{
+  await open();const complete=new Map(state.objects);vi.stubEnv('AUDIT_REQUIRE_EXISTING_TRANSITION','true');
+  expect((await open()).requiredArtifactsVerified).toBe(true);
+  for(const path of [prefix+'rotation.json',prefix+`keys/${next.fp}.pem`,prefix+`transitions/${transition.id}.json`]){
+    state.objects.clear();for(const [key,body]of complete)state.objects.set(key,body);state.objects.delete(path);const count=state.objects.size;
+    await expect(open()).rejects.toThrow('refusing recreation');expect(state.objects.size).toBe(count);expect(state.objects.has(path)).toBe(false);
+  }
 });
 it('preserves original bytes and verifies mixed signatures after reopening the independent store',async()=>{
   const originalObjects=new Map(state.objects),store=await open();

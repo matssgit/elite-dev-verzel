@@ -30,16 +30,18 @@ async function writeOnce(path:string,data:string) {
   finally{await unlink(temporary).catch(()=>{});}
 }
 export class AuditStore {
-  private constructor(readonly directory:string,private key:ReturnType<typeof createPrivateKey>,readonly publicKey:string,private remote?:BlobCheckpoints,readonly transition?:AuditTransition){}
+  private constructor(readonly directory:string,private key:ReturnType<typeof createPrivateKey>,readonly publicKey:string,private remote?:BlobCheckpoints,readonly transition?:AuditTransition,readonly requiredArtifactsVerified=false){}
   static async openBlob(token:string,prefix:string,pem:string,expectedFingerprint:string,rotation?:{json:string;hash:string}) {
     if(!pem || !/^[a-f0-9]{64}$/.test(expectedFingerprint))throw new Error('Blob audit requires protected signing key and pinned fingerprint');
     const key=createPrivateKey(pem.replace(/\\n/g,'\n'));
     const publicKey=createPublicKey(key).export({type:'spki',format:'pem'}).toString();
     if(key.asymmetricKeyType!=='ed25519')throw new Error('Ed25519 signing key required');
     const transition=rotation?parseTransition(rotation.json,rotation.hash,expectedFingerprint):undefined;
+    const requireExisting=process.env.AUDIT_REQUIRE_EXISTING_TRANSITION==='true';
+    if(requireExisting&&!transition)throw new Error('Persistent transition configuration required');
     if(transition&&(transition.namespace!==prefix||transition.activePublicKey!==publicKey))throw new Error('Transition namespace/key mismatch');
     const remote=new BlobCheckpoints(token,prefix);
-    const store=new AuditStore(`blob:${prefix}`,key,publicKey,remote,transition);
+    const store=new AuditStore(`blob:${prefix}`,key,publicKey,remote,transition,requireExisting);
     if(store.fingerprint!==expectedFingerprint)throw new Error('Audit signing key does not match configured public fingerprint');
     assertSigningIdentityAllowed(store.fingerprint,prefix,process.env.NODE_ENV==='production');
     const guard=await remote.read('rotation.json');
@@ -48,11 +50,14 @@ export class AuditStore {
       if(await remote.read('public.pem')!==transition.legacyPublicKey)throw new Error('Historical public pin mismatch');
       const marker=canonical({version:1,transitionId:transition.id,transitionHash:digest(transition),activeFingerprint:transition.activeFingerprint});
       if(guard!==null&&guard!==marker)throw new Error('Independent rotation guard mismatch');
+      if(requireExisting&&(guard!==marker||await remote.read(`keys/${transition.activeFingerprint}.pem`)!==publicKey||await remote.read(`transitions/${transition.id}.json`)!==canonical(transition)))throw new Error('Persistent transition artifact missing or changed; refusing recreation');
       // Validate all pinned historical prefixes BEFORE any rotation publication.
       for(const boundary of transition.boundaries)await store.checkpoints(boundary.auctionId);
-      await remote.writeOnce(`keys/${transition.activeFingerprint}.pem`,publicKey);
-      await remote.writeOnce(`transitions/${transition.id}.json`,canonical(transition));
-      await remote.writeOnce('rotation.json',marker);
+      if(!requireExisting){
+        await remote.writeOnce(`keys/${transition.activeFingerprint}.pem`,publicKey);
+        await remote.writeOnce(`transitions/${transition.id}.json`,canonical(transition));
+        await remote.writeOnce('rotation.json',marker);
+      }
     }else await remote.writeOnce('public.pem',publicKey);
     return store;
   }
@@ -135,7 +140,7 @@ export function auditStore(directory?:string) {
     const prefix=process.env.AUDIT_BLOB_PREFIX??'elite-v1/';const id=`blob:${prefix}`;
     const json=process.env.AUDIT_TRANSITION_JSON,hash=process.env.AUDIT_TRANSITION_SHA256;
     if(Boolean(json)!==Boolean(hash))throw new Error('Both transition document and trusted hash are required');
-    const cacheId=`${id}:${process.env.AUDIT_PUBLIC_KEY_FINGERPRINT??''}:${hash??''}`;
+    const cacheId=`${id}:${process.env.AUDIT_PUBLIC_KEY_FINGERPRINT??''}:${hash??''}:${process.env.AUDIT_REQUIRE_EXISTING_TRANSITION??''}`;
     if(!stores.has(cacheId))stores.set(cacheId,AuditStore.openBlob(process.env.BLOB_READ_WRITE_TOKEN??'',prefix,process.env.AUDIT_PRIVATE_KEY??'',process.env.AUDIT_PUBLIC_KEY_FINGERPRINT??'',json&&hash?{json,hash}:undefined));
     return stores.get(cacheId)!;
   }

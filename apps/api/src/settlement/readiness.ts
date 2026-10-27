@@ -3,6 +3,7 @@ import { connect } from '../db/client.js';
 import { BlobCheckpoints } from '../audit/blob.js';
 import type { PoolClient } from 'pg';
 import { auditStore,canonical,digest } from '../audit/store.js';
+import { incidentPins } from '../audit/incident-pins.js';
 
 // Operator-controlled check during maintenance. No financial mutation or
 // checkpoint publication; the sole optional write is a fixed isolated probe.
@@ -35,6 +36,11 @@ export async function rotationReadiness():Promise<Response> {
     if(!stats)throw new Error('No verification result');
     stage='financial-invariants';
     if(Number(stats.bad_reserves)!==0 || Number(stats.bad_settlements)!==0 || Number(stats.old_connections)!==0)throw new Error('Inconsistent financial state or pre-rotation connections');
+    // Comparison only; no rows/balances are returned. This is the incident's
+    // observed baseline, not a prohibition on legitimate future operations.
+    const observed:Record<string,unknown>={};
+    for(const [table,order]of Object.entries({wallets:'user_id',wallet_entries:'id',auctions:'id',bids:'id',receipts:'id',audit_records:'auction_id,sequence'}))observed[table]=(await client.query(`SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY ${order}),'[]'::jsonb) AS rows FROM ${table} t`)).rows[0]!.rows;
+    const financialSnapshotMatchesIncidentBaseline=digest(observed)===incidentPins.knownFinancialSnapshotHash;
     stage='signing-identity';
     const pem=process.env.AUDIT_PRIVATE_KEY?.replace(/\\n/g,'\n');if(!pem)throw new Error('Missing key');
     const publicKey=createPublicKey(createPrivateKey(pem)).export({type:'spki',format:'pem'}).toString();
@@ -48,7 +54,7 @@ export async function rotationReadiness():Promise<Response> {
     const identity=process.env.AUDIT_TRANSITION_JSON?await auditStore():undefined;
     if(await store.read('public.pem')!==(identity?.transition?.legacyPublicKey??publicKey))throw new Error('Remote pin mismatch');
     const probeId=process.env.ROTATION_PROBE_ID;let probeWritten=false;
-    let signingProof:{payload:Record<string,unknown>;hash:string;signature:string}|undefined;
+    let signingProof:{payload:Record<string,unknown>;hash:string;signature:string}|undefined;let existingSigningProofVerified=false;
     if(identity?.transition){
       stage='signing-proof';
       const payload={scope:'elite-audit-key-readiness',version:1,activeFingerprint:fingerprint,transitionHash:process.env.AUDIT_TRANSITION_SHA256!};
@@ -57,7 +63,11 @@ export async function rotationReadiness():Promise<Response> {
       signingProof={payload,hash,signature};
       const proofs=new BlobCheckpoints(token,'rotation-probes/');
       const path=`key-${fingerprint}-${payload.transitionHash}.json`,body=canonical(signingProof);
-      await proofs.writeOnce(path,body);if(await proofs.read(path)!==body)throw new Error('Signing proof readback mismatch');
+      const existing=await proofs.read(path);
+      if(process.env.AUDIT_REQUIRE_EXISTING_SIGNING_PROOF==='true'&&existing!==body)throw new Error('Persistent signing proof missing or changed; refusing recreation');
+      existingSigningProofVerified=existing===body;
+      if(process.env.AUDIT_REQUIRE_EXISTING_SIGNING_PROOF!=='true')await proofs.writeOnce(path,body);
+      if(await proofs.read(path)!==body)throw new Error('Signing proof readback mismatch');
     }
     if(probeId) {
       if(!/^[a-f0-9-]{36}$/.test(probeId))throw new Error('Invalid probe id');
@@ -69,7 +79,7 @@ export async function rotationReadiness():Promise<Response> {
       if(await probes.read(path)!==body)throw new Error('Probe readback mismatch');
       probeWritten=true;
     }
-    return Response.json({ok:true,maintenance:true,database:true,financialInvariants:true,pendingSettlements:Number(stats.pending),settledAuctions:Number(stats.settled),preRotationConnections:Number(stats.old_connections),migrations:Number(stats.migrations),blobRead:true,blobWriteProbe:probeWritten,fingerprint,...identity?.trustMetadata,signingProof,automaticSettlementExecuted:false});
+    return Response.json({ok:true,maintenance:true,database:true,financialInvariants:true,financialSnapshotMatchesIncidentBaseline,pendingSettlements:Number(stats.pending),settledAuctions:Number(stats.settled),preRotationConnections:Number(stats.old_connections),migrations:Number(stats.migrations),blobRead:true,blobWriteProbe:probeWritten,fingerprint,...identity?.trustMetadata,signingProof,existingSigningProofVerified,existingTransitionArtifactsVerified:identity?.requiredArtifactsVerified===true,automaticSettlementExecuted:false});
   }catch{return Response.json({ok:false,stage},{status:503});}
   finally {
     if(client){await client.query('ROLLBACK').catch(()=>{});client.release();}

@@ -5,7 +5,7 @@ vi.mock('../src/audit/store.js',async()=>{
   const crypto=await import('../src/audit/crypto.js');
   return {...crypto,auditStore:async()=>({transition:state.transition,trustMetadata:{}})};
 });
-vi.mock('../src/db/client.js',()=>({connect:()=>{state.connected++;return {pool:{connect:async()=>({query:async(text:string)=>{state.queries.push(text);return {rows:[state.stats]};},release:()=>{state.released=true;}}),end:async()=>{state.ended=true;}}};}}));
+vi.mock('../src/db/client.js',()=>({connect:()=>{state.connected++;return {pool:{connect:async()=>({query:async(text:string)=>{state.queries.push(text);return {rows:text.startsWith('SELECT COALESCE')?[{rows:[]}]:[state.stats]};},release:()=>{state.released=true;}}),end:async()=>{state.ended=true;}}};}}));
 vi.mock('../src/audit/blob.js',()=>({BlobCheckpoints:class {
   constructor(private token:string,private prefix:string){}
   async read(path:string){return state.files.get(this.prefix+path)??null;}
@@ -25,6 +25,7 @@ it('checks financial state in a read-only transaction and writes only one isolat
   expect(state.queries[0]).toContain('READ ONLY');expect(state.queries.at(-1)).toBe('ROLLBACK');
   expect([...state.files.keys()]).toEqual(['elite-v1/public.pem','rotation-probes/00000000-0000-4000-8000-000000000555.json']);
   expect(JSON.stringify(body)).not.toContain(pem);expect(JSON.stringify(body)).not.toContain('fixture-token');
+  expect(body.financialSnapshotMatchesIncidentBaseline).toBe(false);expect(body).not.toHaveProperty('wallets');expect(state.queries.filter(q=>q.startsWith('SELECT COALESCE'))).toHaveLength(6);
   expect(state.released&&state.ended).toBe(true);
 });
 it('refuses pre-rotation SQL connections without writing a probe',async()=>{
@@ -47,4 +48,8 @@ it('keeps the historical public pin and earlier probe when the active signer cha
   const response=await rotationReadiness();expect(response.status).toBe(200);expect(state.files.get(original)).toBe('old probe');
   expect([...state.files.keys()].filter(k=>k.startsWith('rotation-probes/'))).toHaveLength(3);
   const body=await response.json();expect(body.signingProof.payload.scope).toBe('elite-audit-key-readiness');
+});
+it('refuses to recreate a missing signing proof when persistence is required',async()=>{
+  vi.stubEnv('AUDIT_TRANSITION_JSON','fixture');vi.stubEnv('AUDIT_TRANSITION_SHA256','a'.repeat(64));vi.stubEnv('AUDIT_REQUIRE_EXISTING_SIGNING_PROOF','true');state.transition={legacyPublicKey:publicKey};
+  const response=await rotationReadiness();expect(response.status).toBe(503);expect(await response.json()).toMatchObject({stage:'signing-proof'});expect(state.files.size).toBe(1);
 });
