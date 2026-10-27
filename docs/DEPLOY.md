@@ -1,5 +1,7 @@
 # Deploy — Sprint 4, opção gratuita aprovada
 
+**27/10 — recuperação de incidente:** serviço Render Free dep-dbgcekom7kps73c1jkhg live em modo diagnóstico e função Neon também em recuperação. FINANCIAL_MAINTENANCE=true, AUDIT_RECOVERY_MODE=true, RUN_SETTLEMENT_JOBS=false; trigger disabled. Credenciais privadas não foram lidas por conectores; somente fingerprints/booleans derivados no runtime. Render cf2d…9c91 corresponde às três configurações públicas, mas está exposta; Neon dc33…ece3 não migrou. Quinze checkpoints/snapshot financeiro preservados. Não reabrir; fluxo novo em AUDIT_KEY_RECOVERY.md.
+
 **21:39 — preparação da chave concluída:** operador gerou/protegeu a chave e o manifesto público foi revisado, com hash aprovado em AUDIT_KEY_ROTATION.md. Nenhum consumidor foi alterado com a nova chave; aplicação nativa Render/Neon é o próximo passo. Quinze checkpoints preservados, manutenção ativa e trigger desativado confirmados antes do handoff.
 
 **Fase 2, 26/10 às 21:23:** código de compatibilidade multichave 9ef6bd9 publicado na API dep-dbfusk942hec73d2qc0g (live), frontend dpl_CNSMn7KcM22VUncHESGL3Sdsebyo (READY) e função. Nenhum segredo de assinatura foi trocado. Cinco auditorias/15 checkpoints e quatro comprovantes preservados; FINANCIAL_MAINTENANCE=true e cron pausado. Próximo passo exige geração/inserção nativa protegida, conforme AUDIT_KEY_ROTATION.md. Não há rotação real concluída nem reativação.

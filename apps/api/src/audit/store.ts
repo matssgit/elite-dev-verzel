@@ -6,7 +6,7 @@ import { projectRoot } from '../config.js';
 import type { AuditRecord,AuditTransition } from '@elite/shared';
 import { BlobCheckpoints } from './blob.js';
 import { canonical,digest } from './crypto.js';
-import { parseTransition,signatureFingerprint,assertBoundary } from './rotation.js';
+import { parseTransition,signatureFingerprint,assertBoundary,assertSigningIdentityAllowed } from './rotation.js';
 export { canonical,digest } from './crypto.js';
 function unsigned(record:AuditRecord){return {version:1,auctionId:record.auctionId,sequence:record.sequence,previousHash:record.previousHash,payload:record.payload};}
 export async function assertPersistentMount(directory:string) {
@@ -41,6 +41,7 @@ export class AuditStore {
     const remote=new BlobCheckpoints(token,prefix);
     const store=new AuditStore(`blob:${prefix}`,key,publicKey,remote,transition);
     if(store.fingerprint!==expectedFingerprint)throw new Error('Audit signing key does not match configured public fingerprint');
+    assertSigningIdentityAllowed(store.fingerprint,prefix,process.env.NODE_ENV==='production');
     const guard=await remote.read('rotation.json');
     if(!transition&&guard!==null)throw new Error('Rotation active: legacy-only runtime refused');
     if(transition) {

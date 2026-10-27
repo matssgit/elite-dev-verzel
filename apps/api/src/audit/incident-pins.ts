@@ -4,6 +4,7 @@ export const incidentPins={
   "rootFingerprint": "dc3370282c6119b2a77433fc95c0c84fa6868b23f77e8d6ffd7027d872f3ece3",
   "withdrawnFingerprint": "cf2d363c00c091450177e17cf62d4be0b1f8c0f2be8a911a42e08444329d9c91",
   "withdrawnManifestHash": "36456231ec23295539ca214a25ec3151c9e876de11abb5f7911e3c3a68ed7943",
+  "withdrawnManifestId": "170a1f02-b0a2-4ebc-98da-acf677119dff",
   "withdrawnPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEABBzRT/bXM1/SC4XkJig8HMSfQJuaUBeTtwq/JzGer0c=\n-----END PUBLIC KEY-----\n",
   "boundaries": [
     {

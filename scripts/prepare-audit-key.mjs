@@ -14,14 +14,24 @@ import { fingerprint,hash,verifyReport,verifyTransition } from './audit-verifica
 if(process.platform!=='win32'||!process.stdin.isTTY)throw Error('Use um PowerShell NATIVO interativo do Windows, sem entrada redirecionada.');
 const root=fileURLToPath(new URL('../',import.meta.url));
 if(resolve(process.cwd())!==resolve(root))throw Error('Execute a partir da raiz F:\\teste-verzel.');
-const secretPath=resolve(root,'var/audit-key-rotation/new-private-key.dpapi');
-const manifestPath=resolve(root,'docs/AUDIT_SIGNING_TRANSITION.json');
+const replacement=process.argv.includes('--replacement');
+let incident;try{incident=JSON.parse(await readFile(resolve(root,'docs/AUDIT_KEY_INCIDENT.json'),'utf8'));}catch{if(replacement)throw Error('Registro publico do incidente ausente.');}
+if(incident&&!replacement)throw Error('Preparacao anterior retirada. Use --replacement; nao reutilize a chave exposta.');
+const secretPath=resolve(root,replacement?'var/audit-key-replacement/private-key.dpapi':'var/audit-key-rotation/new-private-key.dpapi');
+const manifestPath=resolve(root,replacement?'docs/AUDIT_SIGNING_REPLACEMENT.json':'docs/AUDIT_SIGNING_TRANSITION.json');
 for(const path of [secretPath,manifestPath]){try{await access(path);}catch{continue;}throw Error('Preparacao anterior encontrada. Nao sobrescrever: informe ao agente, sem enviar a chave.');}
 const boundary=JSON.parse(await readFile(resolve(root,'docs/AUDIT_ROTATION_BOUNDARY.json'),'utf8'));
 const publicKey=await readFile(resolve(root,'docs/AUDIT_PRODUCTION_PUBLIC_KEY.pem'),'utf8');
 if(fingerprint(publicKey)!==boundary.legacyFingerprint)throw Error('Pin historico local divergente.');
 // Confirm the real public histories BEFORE generating any private material.
-for(const pinned of boundary.auctions){
+if(replacement){
+  for(const base of ['https://elite-dev-verzel-api.onrender.com','https://br-muddy-mud-b80fr83g-settlement.compute.c-14.us-east-1.aws.neon.tech']){
+    const response=await fetch(base+'/audit/diagnostics',{signal:AbortSignal.timeout(90000)});
+    if(response.status!==200)throw Error('Diagnostico de recuperacao indisponivel. Nenhuma chave gerada.');
+    const state=await response.json();
+    if(!state.ok||!state.maintenance||!state.recoveryMode||!state.jobsDisabled||state.rotationGuardPresent||!state.rootPinMatches||state.checkpointCount!==15||!state.allHistoriesMatchObserved||state.unexpectedAuditAuctionCount!==0||!state.financialSnapshotMatchesObserved)throw Error('Estado diverge da recuperacao revisada. Pare; nenhuma chave gerada.');
+  }
+}else for(const pinned of boundary.auctions){
   const response=await fetch(`https://elite-dev-verzel-api.onrender.com/audit/${pinned.auctionId}`,{signal:AbortSignal.timeout(90000)});
   if(response.status!==200)throw Error('Auditoria publica indisponivel. Nenhuma chave gerada.');
   const report=await response.json();verifyReport(report,boundary.legacyFingerprint);
@@ -29,10 +39,11 @@ for(const pinned of boundary.auctions){
 }
 const pair=generateKeyPairSync('ed25519');
 const activePublicKey=pair.publicKey.export({type:'spki',format:'pem'}).toString();
+if(incident?.compromisedFingerprints.includes(fingerprint(activePublicKey)))throw Error('Identidade descartada; nao aplicar.');
 const unsigned={version:1,scope:'elite-audit-key-transition',id:randomUUID(),createdAt:new Date().toISOString(),namespace:'elite-v1/',legacyPublicKey:publicKey,legacyFingerprint:boundary.legacyFingerprint,legacyKeyStatus:'potentially-compromised',activePublicKey,activeFingerprint:fingerprint(activePublicKey),boundaries:boundary.auctions.map(({auctionId,sequence,hash})=>({auctionId,sequence,hash}))};
 const manifest={...unsigned,signature:sign(null,Buffer.from(hash(unsigned),'hex'),pair.privateKey).toString('base64')};
 verifyTransition(manifest,boundary.legacyFingerprint,hash(manifest));
-await mkdir(resolve(root,'var/audit-key-rotation'),{recursive:true});
+await mkdir(resolve(root,replacement?'var/audit-key-replacement':'var/audit-key-rotation'),{recursive:true});
 let pem=pair.privateKey.export({type:'pkcs8',format:'pem'}).toString();
 try {
   const protectedWrite=spawnSync('powershell.exe',['-NoProfile','-Command',`
@@ -54,7 +65,7 @@ try {
 }finally{pem=null;}
 await writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
 log('Preparacao concluida. Nenhum consumidor foi alterado. Manutencao e cron permanecem como estavam.');
-log('Chave privada protegida por DPAPI/ACL em var/audit-key-rotation (ignorado pelo Git). Nao compartilhe esse arquivo.');
+log(`Chave privada protegida por DPAPI/ACL em ${replacement?'var/audit-key-replacement':'var/audit-key-rotation'} (ignorado pelo Git). Nao compartilhe esse arquivo.`);
 log(`Fingerprint PUBLICA nova: ${manifest.activeFingerprint}`);
 log(`Hash PUBLICO do manifesto: ${hash(manifest)}`);
 log('Informe ao agente: preparacao da chave concluida. Aguarde revisao do manifesto antes de aplicar.');

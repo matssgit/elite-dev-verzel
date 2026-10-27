@@ -40,6 +40,10 @@ export async function auditDiagnostics():Promise<Response> {
     const rows=(await client.query<AuditRecord>(`SELECT auction_id AS "auctionId",sequence,previous_hash AS "previousHash",payload,hash,signature FROM audit_records ORDER BY auction_id,sequence`)).rows;
     stage='independent-read';const blob=new BlobCheckpoints(process.env.BLOB_READ_WRITE_TOKEN??'','elite-v1/');
     const root=await blob.read('public.pem'),guardText=await blob.read('rotation.json');
+    const withdrawnKeyObject=await blob.read(`keys/${pins.withdrawnFingerprint}.pem`);
+    const withdrawnManifestObject=await blob.read(`transitions/${pins.withdrawnManifestId}.json`);
+    let withdrawnManifestObjectMatches=false;
+    if(withdrawnManifestObject!==null)try{withdrawnManifestObjectMatches=digest(JSON.parse(withdrawnManifestObject))===pins.withdrawnManifestHash;}catch{/* boolean only */}
     let guardMatchesPrepared=false,guardFingerprint:string|null=null;
     if(guardText!==null)try{const guard=JSON.parse(guardText);guardMatchesPrepared=guard.transitionHash===pins.withdrawnManifestHash&&guard.activeFingerprint===pins.withdrawnFingerprint;guardFingerprint=/^[a-f0-9]{64}$/.test(guard.activeFingerprint)?guard.activeFingerprint:null;}catch{/* return boolean only */}
     let checkpointCount=0,allHistoriesMatchObserved=true;
@@ -49,7 +53,7 @@ export async function auditDiagnostics():Promise<Response> {
       for(const name of names.sort((a,b)=>Number(a.split('.')[0])-Number(b.split('.')[0]))){const body=await blob.read(`checkpoints/${boundary.auctionId}/${name}`);if(body===null)throw Error('missing checkpoint');checkpoints.push(JSON.parse(body));}
       checkpointCount+=checkpoints.length;allHistoriesMatchObserved=observedHistoryValid(rows.filter(r=>r.auctionId===boundary.auctionId),checkpoints,boundary.auctionId)&&allHistoriesMatchObserved;
     }
-    return Response.json({...common,ok:true,rootPinMatches:root===pins.rootPublicKey,rotationGuardPresent:guardText!==null,guardMatchesPrepared,guardFingerprint,checkpointCount,allHistoriesMatchObserved,unexpectedAuditAuctionCount:new Set(rows.filter(r=>!pins.boundaries.some(b=>b.auctionId===r.auctionId)).map(r=>r.auctionId)).size,financialSnapshotMatchesObserved:digest(snapshot)===pins.knownFinancialSnapshotHash});
+    return Response.json({...common,ok:true,rootPinMatches:root===pins.rootPublicKey,rotationGuardPresent:guardText!==null,guardMatchesPrepared,guardFingerprint,withdrawnPublicKeyObjectPresent:withdrawnKeyObject!==null,withdrawnPublicKeyObjectMatches:withdrawnKeyObject===pins.withdrawnPublicKey,withdrawnManifestObjectPresent:withdrawnManifestObject!==null,withdrawnManifestObjectMatches,checkpointCount,allHistoriesMatchObserved,unexpectedAuditAuctionCount:new Set(rows.filter(r=>!pins.boundaries.some(b=>b.auctionId===r.auctionId)).map(r=>r.auctionId)).size,financialSnapshotMatchesObserved:digest(snapshot)===pins.knownFinancialSnapshotHash});
   }catch{return Response.json({...common,ok:false,stage},{status:503});}
   finally{if(client){await client.query('ROLLBACK').catch(()=>{});client.release();}await pool.end();}
 }

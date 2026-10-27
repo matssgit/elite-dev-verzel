@@ -2,6 +2,7 @@
 # through chat, argv, tool stdin or plaintext files.
 param([Parameter(Mandatory=$true)][ValidatePattern('^[a-f0-9]{64}$')][string]$ExpectedTransitionHash)
 $ErrorActionPreference='Stop'
+if(Test-Path -LiteralPath (Join-Path $PSScriptRoot '../docs/AUDIT_KEY_INCIDENT.json')){throw 'Procedimento de clipboard retirado apos incidente. Nao reutilize a chave exposta. Consulte AUDIT_KEY_RECOVERY.md.'}
 if([Console]::IsInputRedirected -or $Host.Name -ne 'ConsoleHost'){throw 'Use um PowerShell NATIVO interativo.'}
 . (Join-Path $PSScriptRoot 'protected-clipboard.ps1')
 $workspace=Split-Path -Parent $PSScriptRoot

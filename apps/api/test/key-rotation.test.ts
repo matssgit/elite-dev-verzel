@@ -9,7 +9,8 @@ vi.mock('@vercel/blob',()=>({
 }));
 import { AuditStore,canonical,digest } from '../src/audit/store.js';
 import { publicFingerprint } from '../src/audit/crypto.js';
-import { parseTransition,transitionUnsigned } from '../src/audit/rotation.js';
+import { parseTransition,transitionUnsigned,assertSigningIdentityAllowed } from '../src/audit/rotation.js';
+import {incidentPins} from '../src/audit/incident-pins.js';
 import { verifyReport,verifySigningProof } from '../../../scripts/audit-verification.mjs';
 const key=()=>{const pair=generateKeyPairSync('ed25519');const publicKey=pair.publicKey.export({type:'spki',format:'pem'}).toString();return {privateKey:pair.privateKey,pem:pair.privateKey.export({type:'pkcs8',format:'pem'}).toString(),publicKey,fp:publicFingerprint(publicKey)};};
 const old=key(),next=key(),prefix='rotation-test/',id=randomUUID();
@@ -72,4 +73,9 @@ it('independently verifies the isolated runtime proof and rejects changed scope,
   expect(()=>verifySigningProof({...proof,payload:{...payload,scope:'SETTLE'}},transition)).toThrow();
   expect(()=>verifySigningProof({...proof,payload:{...payload,activeFingerprint:old.fp}},transition)).toThrow();
   expect(()=>verifySigningProof({...proof,signature:sign(null,Buffer.from(proof.hash,'hex'),old.privateKey).toString('base64')},transition)).toThrow();
+});
+it('rejects both exposed identities for production signing without disabling historical public verification',()=>{
+  for(const fp of [incidentPins.rootFingerprint,incidentPins.withdrawnFingerprint])expect(()=>assertSigningIdentityAllowed(fp,'elite-v1/',true)).toThrow('Compromised');
+  expect(()=>assertSigningIdentityAllowed(next.fp,'elite-v1/',true)).not.toThrow();
+  expect(parseTransition(JSON.stringify(transition),digest(transition),next.fp).legacyPublicKey).toBe(old.publicKey);
 });

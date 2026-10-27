@@ -2,6 +2,10 @@ import { createPublicKey,verify } from 'node:crypto';
 import { z } from 'zod';
 import type { AuditRecord,AuditTransition } from '@elite/shared';
 import { digest,publicFingerprint } from './crypto.js';
+import {incidentPins} from './incident-pins.js';
+export function assertSigningIdentityAllowed(fp:string,prefix:string,production:boolean){
+  if(production&&prefix==='elite-v1/'&&[incidentPins.rootFingerprint,incidentPins.withdrawnFingerprint].some(compromised=>compromised===fp))throw new Error('Compromised signing identity: recovery required');
+}
 const fingerprint=z.string().regex(/^[a-f0-9]{64}$/);
 const transitionSchema=z.object({
   version:z.literal(1),scope:z.literal('elite-audit-key-transition'),id:z.uuid(),createdAt:z.iso.datetime(),namespace:z.string().regex(/^[a-zA-Z0-9/_-]+\/$/),

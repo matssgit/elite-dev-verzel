@@ -1,5 +1,7 @@
 # Elite Dev Verzel
 
+**27/10 — manutenção por incidente de chave:** as duas identidades anteriores foram retiradas após relato de exposição. API e função em recuperação read-only, sem operações financeiras e com cron pausado; 15 checkpoints preservados. Não use as instruções antigas de clipboard. Estado e próximo passo em [AUDIT_KEY_RECOVERY](docs/AUDIT_KEY_RECOVERY.md); substituição efetiva nos dois consumidores ainda pendente.
+
 Rotação de assinatura em andamento: suporte multichave e fronteiras implementados/testados; chave nova gerada pelo operador e manifesto público revisado, aguardando aplicação coordenada. Consulte os [passos nativos da fase 2](docs/AUDIT_KEY_ROTATION.md). Manutenção e cron pausado continuam ativos; a chave antiga ainda não foi substituída nos consumidores.
 
 Casa de leilões online do desafio técnico Verzel. **Etapa atual: Sprint 5 — segurança e preparação de entrega.** Fluxo de leilões com catálogo/snapshots, lances concorrentes, carteira, anti-sniping, WebSocket, encerramento/liquidação automática, resultados, comprovantes compartilháveis e auditoria pública assinada implementados.
