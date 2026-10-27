@@ -1,11 +1,14 @@
 import { connect } from '../db/client.js';
 import { processDue } from './service.js';
 import { rotationReadiness } from './readiness.js';
+import { auditDiagnostics } from '../audit/diagnostics.js';
 
 // No HTTP call to Render: the scheduled invocation executes the existing DB
 // transactions and publishes the same durable outbox even while Render sleeps.
 export default {
   async fetch(request:Request):Promise<Response> {
+    if(request.method==='GET'&&new URL(request.url).pathname==='/audit/diagnostics')return auditDiagnostics();
+    if(process.env.AUDIT_RECOVERY_MODE==='true')return Response.json({ok:false,maintenance:true,recovery:true},{status:503});
     if(request.method==='GET'&&new URL(request.url).pathname==='/rotation-readiness')return rotationReadiness();
     if(request.method!=='POST')return new Response('Method not allowed',{status:405});
     if(!request.headers.get('x-neon-trigger-invocation-id'))return new Response('Forbidden',{status:403});

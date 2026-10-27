@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import pg from 'pg';
 import { env, projectRoot } from '../config.js';
+if(process.env.AUDIT_RECOVERY_MODE==='true'){console.log('Audit recovery: migrations skipped.');process.exit(0);}
 const pool = new pg.Pool({connectionString:env.DATABASE_URL});
 const client = await pool.connect();
 try {

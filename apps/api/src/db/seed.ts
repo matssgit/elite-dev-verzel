@@ -7,6 +7,7 @@ import { deposit } from '../wallet/service.js';
 import { searchCatalog } from '../catalog/service.js';
 import { placeBid } from '../auctions/service.js';
 import { openAudit, flushCheckpoints } from '../audit/service.js';
+if(process.env.AUDIT_RECOVERY_MODE==='true'){console.log('Audit recovery: seed skipped, no financial writes.');process.exit(0);}
 const {db,pool}=connect(env.DATABASE_URL);
 if(env.NODE_ENV==='production' && process.env.ALLOW_DEMO_SEED!=='true') throw new Error('Use ALLOW_DEMO_SEED=true explicitamente no ambiente de demonstração.');
 try {
