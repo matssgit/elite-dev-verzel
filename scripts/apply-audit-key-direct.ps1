@@ -6,6 +6,7 @@ if([Console]::IsInputRedirected -or $Host.Name -ne 'ConsoleHost'){throw 'Use um 
 $workspace=Split-Path -Parent $PSScriptRoot
 if((Resolve-Path -LiteralPath (Get-Location).Path).Path -ne (Resolve-Path -LiteralPath $workspace).Path){throw 'Execute na raiz do projeto.'}
 . (Join-Path $PSScriptRoot 'render-private-upload.ps1')
+. (Join-Path $PSScriptRoot 'audit-recovery-preflight.ps1')
 $manifestPath=Join-Path $workspace 'docs/AUDIT_SIGNING_REPLACEMENT.json'
 $manifest=Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 $incident=Get-Content -LiteralPath (Join-Path $workspace 'docs/AUDIT_KEY_INCIDENT.json') -Raw | ConvertFrom-Json
@@ -16,8 +17,7 @@ if($LASTEXITCODE -ne 0){throw 'Manifesto publico invalido.'}
 if($LASTEXITCODE -ne 0){throw 'Manifesto/pin publico divergente. Nenhuma chave foi aberta.'}
 # Check the reviewed state before opening the new private key.
 foreach($base in @('https://elite-dev-verzel-api.onrender.com','https://br-muddy-mud-b80fr83g-settlement.compute.c-14.us-east-1.aws.neon.tech')){
-    $state=Invoke-RestMethod -Uri "$base/audit/diagnostics" -TimeoutSec 90 -ErrorAction Stop
-    if(-not $state.ok -or -not $state.maintenance -or -not $state.recoveryMode -or -not $state.jobsDisabled -or $state.rotationGuardPresent -or -not $state.rootPinMatches -or $state.checkpointCount -ne 15 -or -not $state.allHistoriesMatchObserved -or -not $state.financialSnapshotMatchesObserved){throw 'Estado de recuperacao divergente. Nenhuma chave foi aberta.'}
+    Get-ValidatedAuditRecoveryDiagnostic -BaseUri $base | Out-Null
 }
 $prior=@{};foreach($name in @('AUDIT_PRIVATE_KEY','AUDIT_PUBLIC_KEY_FINGERPRINT','AUDIT_TRANSITION_JSON','AUDIT_TRANSITION_SHA256','DEBUG','NODE_DEBUG')){$prior[$name]=[Environment]::GetEnvironmentVariable($name,'Process')}
 $protected=$null;$tokenProtected=$null;$pointer=[IntPtr]::Zero;$tokenPointer=[IntPtr]::Zero;$variables=$null;$apiToken=$null

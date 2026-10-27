@@ -1,5 +1,17 @@
 # Recuperação após exposição de chaves — 27/10/2026
 
+## Pré-validação tolerante à inicialização, sem repetir uploads
+
+Após relato de HTTP 503 na consulta do script, ambos os diagnósticos responderam HTTP 200 em nova conferência. Render segue Live em 4aedfa2, com manutenção/recuperação ativas, jobs desativados, 15 checkpoints preservados e snapshot financeiro igual; Neon confirma as mesmas condições e cron segue disabled (version 9841168, next_run_at=null). O manifesto novo permanece com hash `126e42c16b21a5b7e3256c507e96eead53bb0a956e94f741928b04505c0e25a1`, validado novamente. Não foi aberta chave DPAPI, solicitado token ou executado upload.
+
+O 503 não foi reproduzido e sua causa histórica não foi comprovada. A [documentação Render Free](https://render.com/docs/free#spinning-down-on-idle) descreve retomada após inatividade, levando aproximadamente um minuto: é compatível com uma falha transitória, não prova de que esse foi o evento observado. O script anterior abortava no primeiro HTTP não bem-sucedido.
+
+`scripts/audit-recovery-preflight.ps1` agora executa somente GET nos dois hosts fixos, sem autenticação ou redirecionamento: até quatro tentativas por endpoint, timeout configurado de 30 segundos e esperas de 5/10/15 segundos. Só repete HTTP 408/429/502/503/504 ou falhas transitórias de transporte. HTTP 401/403/404, redirect, TLS/certificado, resposta inválida e divergência semântica interrompem sem abrir DPAPI. HTTP 503 contendo diagnóstico estruturado do runtime com falha também interrompe imediatamente, sem mascarar erro de integridade como inicialização.
+
+Validação exige booleans reais, contagens inteiras, manutenção/recuperação/jobs desligados nos valores corretos, 15 checkpoints, nenhum lote inesperado, ausência de guard, pin e snapshot iguais e runtime correspondente ao host. A conferência pública do manifesto ocorre antes; só após os DOIS diagnósticos aprovados o fluxo chega ao DPAPI/token.
+
+Nenhuma repetição automática foi adicionada aos PUTs/POST do envio de segredo/deploy ou à implantação Neon. Não repetir upload incerto indiscriminadamente: inspecionar os diagnósticos e estado público antes. Testes: 14 cenários de pré-validação com HTTP/sleep totalmente simulados, incluindo esgotamento, falhas semânticas, autenticação e TLS; testes existentes do uploader também passaram. O novo helper foi executado ainda com GETs REAIS nos dois diagnósticos e confirmou compatibilidade com a recuperação atual. Sintaxe PowerShell aprovada. A alteração é local ao procedimento; nenhum serviço/flag/credencial foi alterado nesta conferência.
+
 ## Nova candidata revisada e aprovada para upload nativo, 13:30
 
 Operador concluiu prepare-audit-key.mjs --replacement. O agente revisou somente o documento público, sem abrir DPAPI ou chave privada:
@@ -8,7 +20,7 @@ Operador concluiu prepare-audit-key.mjs --replacement. O agente revisou somente 
 - fingerprint nova: `07e8ccdec02da616cf480e19a0599271679ed625376bf8968837502b0af94ab2`;
 - hash SHA-256 canônico: `126e42c16b21a5b7e3256c507e96eead53bb0a956e94f741928b04505c0e25a1`;
 - parser estrito do runtime e verificador independente aprovaram formato, chaves e assinatura nova; identidade fora da lista comprometida, raiz pública original preservada e cinco fronteiras idênticas;
-- Render e Neon confirmaram maintenance/recovery/jobs desligados, 15 checkpoints preservados, snapshot financeiro igual, zero lotes inesperados e ausência de guard/artefatos da candidata retirada. Cron disabled, version 9841168, next_run_at=null;
+- Render e Neon confirmaram manutenção/recuperação ativas e jobs desligados, 15 checkpoints preservados, snapshot financeiro igual, zero lotes inesperados e ausência de guard/artefatos da candidata retirada. Cron disabled, version 9841168, next_run_at=null;
 - nenhum consumidor alterado com a chave nova, nenhuma ativação ou movimentação financeira executada; evidência pública/booleana local em tmp/audit-replacement-review.json.
 
 Esta revisão autoriza o próximo handoff nativo no escopo já solicitado. Comparar fingerprint/hash com a saída local do preparo antes de prosseguir. Divergência interrompe; não enviar valores privados para conferência.
