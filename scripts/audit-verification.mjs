@@ -39,3 +39,8 @@ export function verifyReport(report,legacyPin,manifestPin){
   for(const [i,c]of report.checkpoints.entries())check(c.sequence===i&&canonical(c)===canonical(report.records[i]),'Checkpoint independente divergente');
   check(report.issues.length===0,'Banco diverge dos registros assinados');return {events:report.records.length,activeFingerprint:active,transitionHash:manifestPin??null};
 }
+export function verifySigningProof(proof,transition){
+  check(proof?.payload?.scope==='elite-audit-key-readiness'&&proof.payload.version===1,'Escopo da prova inválido');
+  check(proof.payload.activeFingerprint===transition.activeFingerprint&&proof.payload.transitionHash===hash(transition),'Identidade da prova divergente');
+  check(proof.hash===hash(proof.payload)&&verify(null,Buffer.from(proof.hash,'hex'),transition.activePublicKey,Buffer.from(proof.signature,'base64')),'Assinatura da prova inválida');return true;
+}

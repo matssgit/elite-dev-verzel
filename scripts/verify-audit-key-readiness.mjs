@@ -1,0 +1,11 @@
+import { readFile } from 'node:fs/promises';
+import process from 'node:process';
+import { log } from 'node:console';
+import { verifyTransition,verifySigningProof } from './audit-verification.mjs';
+const [path,legacyPin,manifestPin]=process.argv.slice(2);
+if(!path||!legacyPin||!manifestPin)throw Error('Uso: node scripts/verify-audit-key-readiness.mjs evidencia.json <pin-historico> <hash-manifesto-confiavel>');
+const report=JSON.parse(await readFile(path,'utf8'));
+const transition=verifyTransition(report.transition,legacyPin,manifestPin);
+if(!report.ok||!report.maintenance||report.fingerprint!==transition.activeFingerprint||report.transitionHash!==manifestPin)throw Error('Runtime/pins divergentes');
+verifySigningProof(report.signingProof,transition);
+log('Manifesto e prova isolada assinada pela chave ativa conferem. Nao e evento financeiro nem prova de execucao do cron.');

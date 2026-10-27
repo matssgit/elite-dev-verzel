@@ -1,7 +1,10 @@
 import { beforeEach,afterEach,it,expect,vi } from 'vitest';
 import { generateKeyPairSync,createHash } from 'node:crypto';
 const state=vi.hoisted(()=>({files:new Map<string,string>(),queries:[] as string[],connected:0,released:false,ended:false,transition:undefined as {legacyPublicKey:string}|undefined,stats:{bad_reserves:'0',bad_settlements:'0',pending:'1',settled:'4',old_connections:'0',migrations:'3'}}));
-vi.mock('../src/audit/store.js',()=>({auditStore:async()=>({transition:state.transition,trustMetadata:{}})}));
+vi.mock('../src/audit/store.js',async()=>{
+  const crypto=await import('../src/audit/crypto.js');
+  return {...crypto,auditStore:async()=>({transition:state.transition,trustMetadata:{}})};
+});
 vi.mock('../src/db/client.js',()=>({connect:()=>{state.connected++;return {pool:{connect:async()=>({query:async(text:string)=>{state.queries.push(text);return {rows:[state.stats]};},release:()=>{state.released=true;}}),end:async()=>{state.ended=true;}}};}}));
 vi.mock('../src/audit/blob.js',()=>({BlobCheckpoints:class {
   constructor(private token:string,private prefix:string){}
@@ -39,7 +42,9 @@ it('is unavailable when maintenance is disabled',async()=>{
 });
 it('keeps the historical public pin and earlier probe when the active signer changes',async()=>{
   vi.stubEnv('AUDIT_TRANSITION_JSON','fixture');state.transition={legacyPublicKey:'historical-public-key'};state.files.set('elite-v1/public.pem','historical-public-key');
+  vi.stubEnv('AUDIT_TRANSITION_SHA256','a'.repeat(64));
   const original='rotation-probes/00000000-0000-4000-8000-000000000555.json';state.files.set(original,'old probe');
   const response=await rotationReadiness();expect(response.status).toBe(200);expect(state.files.get(original)).toBe('old probe');
-  expect([...state.files.keys()].filter(k=>k.startsWith('rotation-probes/'))).toHaveLength(2);
+  expect([...state.files.keys()].filter(k=>k.startsWith('rotation-probes/'))).toHaveLength(3);
+  const body=await response.json();expect(body.signingProof.payload.scope).toBe('elite-audit-key-readiness');
 });

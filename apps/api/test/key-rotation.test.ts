@@ -10,7 +10,7 @@ vi.mock('@vercel/blob',()=>({
 import { AuditStore,canonical,digest } from '../src/audit/store.js';
 import { publicFingerprint } from '../src/audit/crypto.js';
 import { parseTransition,transitionUnsigned } from '../src/audit/rotation.js';
-import { verifyReport } from '../../../scripts/audit-verification.mjs';
+import { verifyReport,verifySigningProof } from '../../../scripts/audit-verification.mjs';
 const key=()=>{const pair=generateKeyPairSync('ed25519');const publicKey=pair.publicKey.export({type:'spki',format:'pem'}).toString();return {privateKey:pair.privateKey,pem:pair.privateKey.export({type:'pkcs8',format:'pem'}).toString(),publicKey,fp:publicFingerprint(publicKey)};};
 const old=key(),next=key(),prefix='rotation-test/',id=randomUUID();
 let legacy:AuditStore,transition:AuditTransition,original:AuditRecord[];
@@ -64,4 +64,12 @@ it('replays historical and new outbox objects without overwriting or duplicating
   const record=store.sign(id,2,original[1]!.hash,{type:'SETTLE'});await store.publish(record);const count=state.objects.size;
   const restarted=await open();await restarted.publish(record);for(const oldRecord of original)await restarted.publish(oldRecord);
   expect(state.objects.size).toBe(count);expect(state.objects.get(prefix+`checkpoints/${id}/1.json`)).toBe(canonical(original[1]));
+});
+it('independently verifies the isolated runtime proof and rejects changed scope, pin and signature',()=>{
+  const payload={scope:'elite-audit-key-readiness',version:1,activeFingerprint:next.fp,transitionHash:digest(transition)};
+  const proof={payload,hash:digest(payload),signature:sign(null,Buffer.from(digest(payload),'hex'),next.privateKey).toString('base64')};
+  expect(verifySigningProof(proof,transition)).toBe(true);
+  expect(()=>verifySigningProof({...proof,payload:{...payload,scope:'SETTLE'}},transition)).toThrow();
+  expect(()=>verifySigningProof({...proof,payload:{...payload,activeFingerprint:old.fp}},transition)).toThrow();
+  expect(()=>verifySigningProof({...proof,signature:sign(null,Buffer.from(proof.hash,'hex'),old.privateKey).toString('base64')},transition)).toThrow();
 });

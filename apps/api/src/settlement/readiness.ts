@@ -1,8 +1,8 @@
-import { createHash,createPrivateKey,createPublicKey } from 'node:crypto';
+import { createHash,createPrivateKey,createPublicKey,sign,verify } from 'node:crypto';
 import { connect } from '../db/client.js';
 import { BlobCheckpoints } from '../audit/blob.js';
 import type { PoolClient } from 'pg';
-import { auditStore } from '../audit/store.js';
+import { auditStore,canonical,digest } from '../audit/store.js';
 
 // Operator-controlled check during maintenance. No financial mutation or
 // checkpoint publication; the sole optional write is a fixed isolated probe.
@@ -48,6 +48,17 @@ export async function rotationReadiness():Promise<Response> {
     const identity=process.env.AUDIT_TRANSITION_JSON?await auditStore():undefined;
     if(await store.read('public.pem')!==(identity?.transition?.legacyPublicKey??publicKey))throw new Error('Remote pin mismatch');
     const probeId=process.env.ROTATION_PROBE_ID;let probeWritten=false;
+    let signingProof:{payload:Record<string,unknown>;hash:string;signature:string}|undefined;
+    if(identity?.transition){
+      stage='signing-proof';
+      const payload={scope:'elite-audit-key-readiness',version:1,activeFingerprint:fingerprint,transitionHash:process.env.AUDIT_TRANSITION_SHA256!};
+      const hash=digest(payload),signature=sign(null,Buffer.from(hash,'hex'),createPrivateKey(pem)).toString('base64');
+      if(!verify(null,Buffer.from(hash,'hex'),publicKey,Buffer.from(signature,'base64')))throw new Error('Signing proof failed');
+      signingProof={payload,hash,signature};
+      const proofs=new BlobCheckpoints(token,'rotation-probes/');
+      const path=`key-${fingerprint}-${payload.transitionHash}.json`,body=canonical(signingProof);
+      await proofs.writeOnce(path,body);if(await proofs.read(path)!==body)throw new Error('Signing proof readback mismatch');
+    }
     if(probeId) {
       if(!/^[a-f0-9-]{36}$/.test(probeId))throw new Error('Invalid probe id');
       stage='blob-write';const probes=new BlobCheckpoints(token,'rotation-probes/');
@@ -58,7 +69,7 @@ export async function rotationReadiness():Promise<Response> {
       if(await probes.read(path)!==body)throw new Error('Probe readback mismatch');
       probeWritten=true;
     }
-    return Response.json({ok:true,maintenance:true,database:true,financialInvariants:true,pendingSettlements:Number(stats.pending),settledAuctions:Number(stats.settled),preRotationConnections:Number(stats.old_connections),migrations:Number(stats.migrations),blobRead:true,blobWriteProbe:probeWritten,fingerprint,...identity?.trustMetadata,automaticSettlementExecuted:false});
+    return Response.json({ok:true,maintenance:true,database:true,financialInvariants:true,pendingSettlements:Number(stats.pending),settledAuctions:Number(stats.settled),preRotationConnections:Number(stats.old_connections),migrations:Number(stats.migrations),blobRead:true,blobWriteProbe:probeWritten,fingerprint,...identity?.trustMetadata,signingProof,automaticSettlementExecuted:false});
   }catch{return Response.json({ok:false,stage},{status:503});}
   finally {
     if(client){await client.query('ROLLBACK').catch(()=>{});client.release();}
