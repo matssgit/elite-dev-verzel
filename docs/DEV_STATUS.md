@@ -1,5 +1,7 @@
 # Status DEV — Sprint 5 — 26/10/2026
 
+**Estado atual às 21:04:** ensaio simulado autorizado de R$50 aprovado, segunda execução idempotente sem novas alterações. Um débito, um crédito, reserva liberada, comprovante público e um novo checkpoint; 14 anteriores preservados, 15 no total. Após remover o executor temporário por redeploy, invariantes conferem, cinco lotes liquidados e zero pendentes. API/função mantêm FINANCIAL_MAINTENANCE=true; cron enabled=false. Não reativar sem autorização. 28 testes direcionados e TypeScript/lint/build aprovados nesta etapa. Fase 2 preparada em AUDIT_KEY_ROTATION.md e AUDIT_ROTATION_BOUNDARY.json; chave ainda não trocada. Estados anteriores abaixo são históricos.
+
 **Estado pós-rotação, 26/10 às 20:48 (America/Sao_Paulo): manutenção ATIVA na API/função e trigger PAUSADO.** Operador confirmou troca SQL/Blob e executou o handoff nativo. Função deployment 5 concluído; API reiniciada em dep-dbfu7q0m7kps73aq84mg (live). Cinco auditorias e seus 14 checkpoints permanecem idênticos ao baseline anterior. Função com verificação isolada em 19398e8 confirmou conexão, três migrations, reservas/liquidações gravadas consistentes, zero conexões SQL anteriores à configuração nova e leitura/escrita Blob em namespace de prova. Há UMA liquidação pendente; ela NÃO foi executada após a rotação, respeitando o bloqueio. Não reabrir automaticamente. As notas de tentativas anteriores abaixo são históricas.
 
 ## Estado atual
@@ -44,6 +46,8 @@ Provas da Sprint 4 preservadas: corrida no mesmo lote e entre lotes, liberação
 
 ## Verificações e Git
 
+- Ensaio controlado b91f50f: 10 testes de restrição/comparação financeira, 6 de manutenção/prontidão e 12 de liquidação PostgreSQL local aprovados (28). TypeScript, lint e build completos aprovados. CI do código aprovado: https://github.com/matssgit/elite-dev-verzel/actions/runs/40423925715 . Evidências em tmp/controlled-demo-settlement-result.json, controlled-demo-public-checks.json, controlled-demo-audits-after.json e controlled-demo-post-redeploy.json. Nenhum segredo ou sessão foi salvo nesses arquivos; a sessão dedicada foi revogada.
+
 - Pós-rotação: comparação byte a byte dos eventos/checkpoints de cinco lotes (14 entradas); verificador independente aprovou cada histórico. Login/CORS/permissões, quatro rotas financeiras retornando 503 MAINTENANCE, reconexão WS e três comprovantes de R$11/R$70/R$10 aprovados. Sessão de teste encerrada. Nenhum lance/depósito/liquidação criado.
 - /rotation-readiness da função usa transação READ ONLY seguida de ROLLBACK para consultar invariantes. Um objeto pequeno de prova é gravado em rotation-probes/, fora de elite-v1/checkpoints, com ID fixado no deploy, sem conteúdo controlado pelo cliente e sem sobrescrita. Endpoint indisponível quando manutenção=false. Não reativa cron nem executa processDue/settleAuction. Novas credenciais não foram lidas/transmitidas pelas ferramentas do agente.
 - Verificação da função: HTTP 200, settledAuctions=4, pendingSettlements=1, preRotationConnections=0, migrations=3, blobRead/blobWriteProbe=true, automaticSettlementExecuted=false. Fingerprint preservada. Logs/retornos não incluem segredo.
@@ -57,7 +61,7 @@ Provas da Sprint 4 preservadas: corrida no mesmo lote e entre lotes, liberação
 
 ## Pendências e bloqueios
 
-1. Configuração SQL/Blob concluída pelo operador e consumidores funcionando. Credenciais antigas não foram testadas diretamente; expiração imediata Blob foi informada pelo operador. Ensaio de liquidação financeira pós-rotação ainda não executado: o usuário mantém manutenção ativa e cron pausado. Uma liquidação legítima de R$50 aguarda o worker. Novo ensaio precisa respeitar essa instrução; não liberar o cron silenciosamente.
+1. Configuração SQL/Blob e ensaio controlado de R$50 concluídos. Credenciais antigas não foram testadas diretamente; expiração imediata Blob foi informada pelo operador. Cron continua pausado: o ensaio foi execução manual restrita, não prova pós-rotação do trigger agendado. Reabertura aguarda autorização.
 2. Implementação/testes da transição criptográfica e confirmação separada antes de trocar a identidade de produção. Não há restauração de autenticidade retroativa de uma chave comprometida.
 3. Suspensão física histórica classificada como inconclusiva; liquidação independente confirmada.
 4. Franquias gratuitas, cold start e indisponibilidade eventual; manter sem upgrade e sem forma de pagamento Render. Não prometer disponibilidade gratuita indefinida.

@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "kind": "OBSERVED_STATE_PREPARATION_ONLY",
+  "capturedAt": "2026-10-27T00:03:47.636Z",
+  "sourceCommit": "b91f50f",
+  "legacyFingerprint": "dc3370282c6119b2a77433fc95c0c84fa6868b23f77e8d6ffd7027d872f3ece3",
+  "legacyPublicKeyFile": "AUDIT_PRODUCTION_PUBLIC_KEY.pem",
+  "successorFingerprint": null,
+  "transitionAuthorized": false,
+  "limitations": [
+    "Legacy private key potentially compromised; observation does not attest historical origin.",
+    "Blob is not WORM. This unsigned preparation file does not authorize any signing key."
+  ],
+  "auctions": [
+    {
+      "auctionId": "00000000-0000-4000-8000-000000000100",
+      "sequence": 2,
+      "hash": "d64660dda46b0ce5a55d512f65ca13a7603fa9b19788d0c5c1e56be975af3b5d",
+      "events": 3,
+      "checkpoints": 3
+    },
+    {
+      "auctionId": "30ae384d-0b99-4430-8dca-131f51e7bd41",
+      "sequence": 3,
+      "hash": "fcfb8418682af7ce6e1c0e96534e3c84799b02427bbf85ec79ea58da4ae1bf39",
+      "events": 4,
+      "checkpoints": 4
+    },
+    {
+      "auctionId": "87f4ae5d-aab5-49e7-83f2-77bd2ba4fd39",
+      "sequence": 1,
+      "hash": "5dd762a2cc40cc3dfa9758bed5640e606bdb66880aa17901f3467704f612cca3",
+      "events": 2,
+      "checkpoints": 2
+    },
+    {
+      "auctionId": "8e1b798d-0654-4f4e-b514-933f4d4b7bf7",
+      "sequence": 2,
+      "hash": "b26500214cff43a7a0b78edb281a82565ebf4cd22588f4cac20e4377fa606143",
+      "events": 3,
+      "checkpoints": 3
+    },
+    {
+      "auctionId": "c2eaa536-a502-4dfa-9f2b-1511b082bba3",
+      "sequence": 2,
+      "hash": "88ce7c3ac36b7356965637c2e2e9fd190be0782510b20498cd31b6773334f6f6",
+      "events": 3,
+      "checkpoints": 3
+    }
+  ]
+}

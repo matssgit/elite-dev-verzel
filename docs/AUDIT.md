@@ -1,5 +1,7 @@
 # Auditoria: algoritmo, confiança e limites
 
+**Ensaio de 26/10 às 21:03:** somente o lote demo original recebeu um novo SETTLE/checkpoint, sem dinheiro real. Agora são 15 checkpoints em cinco lotes; os 14 anteriores foram preservados e o CLI independente conferiu todas as cadeias. O novo objeto permaneceu verificável após redeploy da função. A chave antiga não foi substituída. Preparação da transição, fronteiras e testes exigidos em [AUDIT_KEY_ROTATION.md](AUDIT_KEY_ROTATION.md); captura pública em [AUDIT_ROTATION_BOUNDARY.json](AUDIT_ROTATION_BOUNDARY.json), ainda sem sucessora ou autorização de corte. Notas anteriores de 14 checkpoints referem-se ao estado pré-ensaio.
+
 **Sprint 5 — assinatura ainda pendente:** SQL/Blob foram substituídos pelo operador; a função comprovou leitura/escrita no store e a API leu os históricos com o ambiente atualizado. Os 14 checkpoints dos cinco lotes permanecem idênticos e verificáveis. A chave privada anterior continua potencialmente comprometida: isso impede declarar autoria legítima apenas pela assinatura. Não houve troca de chave/pin, exclusão ou reassinatura de eventos. Procedimento/evidências em [SECURITY_ROTATION.md](SECURITY_ROTATION.md).
 
 ## Modelo de ameaça

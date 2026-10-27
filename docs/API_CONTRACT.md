@@ -97,6 +97,8 @@ Auditoria INTEGRO é condicional ao modelo banco comprometido/chave e arquivos p
 
 ## Verificação operacional durante manutenção
 
+O ensaio de R$50 usou fonte temporária separada `controlled-function.ts`, armada por deploy com hash de uma sessão dedicada do vendedor e expiração curta. Somente POST autenticado para o lote demo fixo, valor 5000 centavos e contas do seed era aceito. A execução incluiu duas chamadas ao serviço transacional e comparação financeira completa; não alterou a flag de manutenção ou trigger. Essa fonte já foi removida do runtime por redeploy: não há endpoint ativo de liquidação pública. O código guardado no repositório serve para revisão; não executá-lo novamente no lote já liquidado.
+
 Na função Neon `settlement`, GET `/rotation-readiness` responde 404 quando `FINANCIAL_MAINTENANCE` não é `true`. Durante manutenção, verifica conexão PostgreSQL e invariantes financeiras em transação READ ONLY, encerrada com ROLLBACK; compara a identidade de assinatura com o pin e a chave pública remota. Não executa liquidação nem publica checkpoints financeiros.
 
 O deploy exige `ROTATION_SESSION_CUTOFF` (instante público da configuração nova) para contar conexões do mesmo papel anteriores a esse instante. `ROTATION_PROBE_ID` opcional, definido pelo operador no deploy, permite escrever/ler uma prova fixa em `rotation-probes/`, fora do namespace de checkpoints, sem sobrescrita ou conteúdo fornecido pelo cliente. Valores protegidos continuam somente no ambiente do runtime.
