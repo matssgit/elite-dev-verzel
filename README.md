@@ -1,5 +1,7 @@
 # Elite Dev Verzel
 
+**Entrega em 29/10/2026:** a produção permanece em manutenção e permite consulta; os fluxos financeiros não estão liberados. Para estado atual, pendências e avaliação completa em ambiente local isolado, leia [FINAL_DELIVERY_READINESS](docs/FINAL_DELIVERY_READINESS.md). Notas históricas abaixo não significam que o cron ou as operações públicas estejam ativos hoje.
+
 **27/10, 15:27 — diagnóstico neutro concluído:** autenticação funciona na versão identificada; foram observadas respostas de versões diferentes durante a atualização. Causa interna ainda pendente. Nenhuma nova operação financeira; sessão revogada, manutenção ativa e cron pausado. [Evidências e correção proposta](docs/POST_403_DIAGNOSTIC.md).
 
 **27/10, 14:59 — retomada bloqueada antes da fixture:** POST de preparação rejeitado com 403 após GET autenticado; interrompido sem repetir movimentações. Fonte normal restaurada, cron nunca habilitado, manutenção e bloqueios ativos. Snapshot, 15 checkpoints e quatro comprovantes preservados. Agendamento real ainda pendente; [evidências e diagnóstico seguro](docs/SCHEDULED_SETTLEMENT_VALIDATION_RESULT.md).
