@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "status": "RECOVERY_REQUIRED",
+  "status": "REPLACEMENT_REVIEWED_PENDING_NATIVE_UPLOAD",
   "reportedOn": "2026-10-27",
   "compromisedFingerprints": [
     "dc3370282c6119b2a77433fc95c0c84fa6868b23f77e8d6ffd7027d872f3ece3",
@@ -10,6 +10,9 @@
   "withdrawnManifestHash": "36456231ec23295539ca214a25ec3151c9e876de11abb5f7911e3c3a68ed7943",
   "historicalCheckpointCount": 15,
   "replacementManifest": "AUDIT_SIGNING_REPLACEMENT.json",
+  "replacementFingerprint": "07e8ccdec02da616cf480e19a0599271679ed625376bf8968837502b0af94ab2",
+  "replacementManifestHash": "126e42c16b21a5b7e3256c507e96eead53bb0a956e94f741928b04505c0e25a1",
+  "replacementReviewedAt": "2026-10-27T16:30:09.552Z",
   "replacementApplied": false,
   "note": "Both exposed/prepared identities are excluded from future signing. Public keys, signatures and historical manifests are retained for verification only. No retroactive authenticity guarantee."
 }

@@ -12,6 +12,8 @@ $incident=Get-Content -LiteralPath (Join-Path $workspace 'docs/AUDIT_KEY_INCIDEN
 if($manifest.activeFingerprint -in $incident.compromisedFingerprints){throw 'Identidade comprometida proibida. Nenhuma chave foi aberta.'}
 $compact=& node -e "process.stdout.write(JSON.stringify(JSON.parse(require('node:fs').readFileSync(process.argv[1],'utf8'))))" $manifestPath
 if($LASTEXITCODE -ne 0){throw 'Manifesto publico invalido.'}
+& node scripts/verify-audit-transition.mjs $manifestPath $ExpectedTransitionHash --public-only
+if($LASTEXITCODE -ne 0){throw 'Manifesto/pin publico divergente. Nenhuma chave foi aberta.'}
 # Check the reviewed state before opening the new private key.
 foreach($base in @('https://elite-dev-verzel-api.onrender.com','https://br-muddy-mud-b80fr83g-settlement.compute.c-14.us-east-1.aws.neon.tech')){
     $state=Invoke-RestMethod -Uri "$base/audit/diagnostics" -TimeoutSec 90 -ErrorAction Stop
@@ -23,6 +25,7 @@ try{
     $protected=ConvertTo-SecureString (Get-Content -LiteralPath (Join-Path $workspace 'var/audit-key-replacement/private-key.dpapi') -Raw)
     $pointer=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($protected)
     $env:AUDIT_PRIVATE_KEY=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer).Replace("`r`n","`n").Replace("`n",'\n')
+    if([string]::IsNullOrWhiteSpace($env:AUDIT_PRIVATE_KEY)){throw 'Chave DPAPI vazia. Nenhum upload iniciado.'}
     $env:AUDIT_PUBLIC_KEY_FINGERPRINT=$manifest.activeFingerprint;$env:AUDIT_TRANSITION_JSON=$compact;$env:AUDIT_TRANSITION_SHA256=$ExpectedTransitionHash;$env:DEBUG=$null;$env:NODE_DEBUG=$null
     & node scripts/verify-audit-transition.mjs $manifestPath $ExpectedTransitionHash
     if($LASTEXITCODE -ne 0){throw 'Manifesto/pin/chave divergentes. Nenhum upload iniciado.'}

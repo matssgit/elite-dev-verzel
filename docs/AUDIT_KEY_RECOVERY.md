@@ -1,5 +1,35 @@
 # Recuperação após exposição de chaves — 27/10/2026
 
+## Nova candidata revisada e aprovada para upload nativo, 13:30
+
+Operador concluiu prepare-audit-key.mjs --replacement. O agente revisou somente o documento público, sem abrir DPAPI ou chave privada:
+
+- Documento: [AUDIT_SIGNING_REPLACEMENT.json](AUDIT_SIGNING_REPLACEMENT.json), ID dc38b398-9f20-48e3-8851-e095e618cb46;
+- fingerprint nova: `07e8ccdec02da616cf480e19a0599271679ed625376bf8968837502b0af94ab2`;
+- hash SHA-256 canônico: `126e42c16b21a5b7e3256c507e96eead53bb0a956e94f741928b04505c0e25a1`;
+- parser estrito do runtime e verificador independente aprovaram formato, chaves e assinatura nova; identidade fora da lista comprometida, raiz pública original preservada e cinco fronteiras idênticas;
+- Render e Neon confirmaram maintenance/recovery/jobs desligados, 15 checkpoints preservados, snapshot financeiro igual, zero lotes inesperados e ausência de guard/artefatos da candidata retirada. Cron disabled, version 9841168, next_run_at=null;
+- nenhum consumidor alterado com a chave nova, nenhuma ativação ou movimentação financeira executada; evidência pública/booleana local em tmp/audit-replacement-review.json.
+
+Esta revisão autoriza o próximo handoff nativo no escopo já solicitado. Comparar fingerprint/hash com a saída local do preparo antes de prosseguir. Divergência interrompe; não enviar valores privados para conferência.
+
+### Próxima ação humana: configuração direta por HTTPS
+
+1. Fechar execuções antigas e abrir PowerShell NATIVO com o mesmo usuário Windows, sem transcrição. Não usar configure-audit-key.ps1 nem qualquer helper de clipboard.
+2. Na conta Render, Account Settings > API Keys, criar token temporário para esta operação. Não enviar o token à conversa ou colocá-lo no comando/arquivo. Inserir somente quando o script solicitar a entrada oculta.
+3. Executar:
+
+   ```powershell
+   cd F:\teste-verzel
+   .\scripts\apply-audit-key-direct.ps1 -ExpectedTransitionHash 126e42c16b21a5b7e3256c507e96eead53bb0a956e94f741928b04505c0e25a1
+   ```
+
+4. O script verifica o manifesto PUBLICAMENTE antes de abrir DPAPI e valida a privada depois de abri-lo, sem mostrá-la. Quando solicitar o token da API Render, fornecer SOMENTE esse token — a chave de assinatura é recuperada automaticamente do DPAPI novo, não deve ser colada em lugar algum.
+5. O envio vai diretamente por HTTPS para as sete variáveis permitidas do serviço fixo; preserva FINANCIAL_MAINTENANCE=true, AUDIT_RECOVERY_MODE=true, RUN_SETTLEMENT_JOBS=false. O script informa apenas um deploy ID público. Aguardar status Live no Render e digitar APLICAR no terminal nativo para implantar a MESMA configuração na função Neon, também em recuperação.
+6. Revogar o token temporário Render ao terminar e informar **“configuração HTTPS concluída”**. Em caso de erro, não imprimir request/response/cabeçalhos/env; enviar somente mensagem genérica e estado público. Manter manutenção/recuperação/cron pausado.
+
+Nenhuma requisição real do uploader foi executada pelo agente. Teste de transporte com HTTP simulado aprovado novamente; sintaxe PowerShell e lint aprovados. A assinatura nova no runtime, identidade dos dois consumidores, publicação do manifesto/guard e persistência pós-redeploy só serão declaradas verificadas após a configuração real e as etapas de ativação criptográfica abaixo. Não reativar finanças automaticamente.
+
 ## Estado confirmado, antes de qualquer reativação
 
 Conferência final às 12:59 de 27/10: código 4aedfa2 ativo no Render (`dep-dbgcjt0u01pc73aomag0`, live) e função atualizada em recuperação. CI aprovado: https://github.com/matssgit/elite-dev-verzel/actions/runs/40536125587 . Ambos confirmam ausência também dos objetos remotos da chave/manifesto candidatos retirados, além da ausência de rotation.json. Os 15 checkpoints e o snapshot financeiro permanecem idênticos. Evidência agregada sem segredos: tmp/audit-incident-final.json. Nenhum upload de nova chave nem ativação ocorreu.

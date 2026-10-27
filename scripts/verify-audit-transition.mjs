@@ -8,7 +8,7 @@ const legacy='dc3370282c6119b2a77433fc95c0c84fa6868b23f77e8d6ffd7027d872f3ece3';
 try {
   const transition=JSON.parse(await readFile(path,'utf8'));
   verifyTransition(transition,legacy,expectedHash);
-  if(process.env.AUDIT_PRIVATE_KEY){
+  if(!process.argv.includes('--public-only')&&process.env.AUDIT_PRIVATE_KEY){
     const pem=process.env.AUDIT_PRIVATE_KEY.replace(/\\n/g,'\n');
     const key=createPrivateKey(pem);
     if(key.asymmetricKeyType!=='ed25519'||fingerprint(createPublicKey(key).export({type:'spki',format:'pem'}).toString())!==transition.activeFingerprint)throw Error('identity');
