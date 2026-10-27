@@ -2,6 +2,7 @@ import { createHash,createPrivateKey,createPublicKey } from 'node:crypto';
 import { connect } from '../db/client.js';
 import { BlobCheckpoints } from '../audit/blob.js';
 import type { PoolClient } from 'pg';
+import { auditStore } from '../audit/store.js';
 
 // Operator-controlled check during maintenance. No financial mutation or
 // checkpoint publication; the sole optional write is a fixed isolated probe.
@@ -41,7 +42,11 @@ export async function rotationReadiness():Promise<Response> {
     if(fingerprint!==process.env.AUDIT_PUBLIC_KEY_FINGERPRINT)throw new Error('Pin mismatch');
     const token=process.env.BLOB_READ_WRITE_TOKEN??'';
     const store=new BlobCheckpoints(token,process.env.AUDIT_BLOB_PREFIX??'elite-v1/');
-    stage='blob-read';if(await store.read('public.pem')!==publicKey)throw new Error('Remote pin mismatch');
+    stage='blob-read';
+    // Rotation retains public.pem as the historical root; the active identity
+    // and transition are independently pinned and checked by AuditStore.
+    const identity=process.env.AUDIT_TRANSITION_JSON?await auditStore():undefined;
+    if(await store.read('public.pem')!==(identity?.transition?.legacyPublicKey??publicKey))throw new Error('Remote pin mismatch');
     const probeId=process.env.ROTATION_PROBE_ID;let probeWritten=false;
     if(probeId) {
       if(!/^[a-f0-9-]{36}$/.test(probeId))throw new Error('Invalid probe id');
@@ -51,7 +56,7 @@ export async function rotationReadiness():Promise<Response> {
       if(await probes.read(`${probeId}.json`)!==body)throw new Error('Probe readback mismatch');
       probeWritten=true;
     }
-    return Response.json({ok:true,maintenance:true,database:true,financialInvariants:true,pendingSettlements:Number(stats.pending),settledAuctions:Number(stats.settled),preRotationConnections:Number(stats.old_connections),migrations:Number(stats.migrations),blobRead:true,blobWriteProbe:probeWritten,fingerprint,automaticSettlementExecuted:false});
+    return Response.json({ok:true,maintenance:true,database:true,financialInvariants:true,pendingSettlements:Number(stats.pending),settledAuctions:Number(stats.settled),preRotationConnections:Number(stats.old_connections),migrations:Number(stats.migrations),blobRead:true,blobWriteProbe:probeWritten,fingerprint,...identity?.trustMetadata,automaticSettlementExecuted:false});
   }catch{return Response.json({ok:false,stage},{status:503});}
   finally {
     if(client){await client.query('ROLLBACK').catch(()=>{});client.release();}

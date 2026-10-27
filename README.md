@@ -1,5 +1,7 @@
 # Elite Dev Verzel
 
+Rotação de assinatura em andamento: suporte multichave e fronteiras implementados/testados, aguardando geração protegida da nova chave e corte coordenado. Consulte os [passos nativos da fase 2](docs/AUDIT_KEY_ROTATION.md). Manutenção e cron pausado continuam ativos; a chave antiga ainda não foi substituída.
+
 Casa de leilões online do desafio técnico Verzel. **Etapa atual: Sprint 5 — segurança e preparação de entrega.** Fluxo de leilões com catálogo/snapshots, lances concorrentes, carteira, anti-sniping, WebSocket, encerramento/liquidação automática, resultados, comprovantes compartilháveis e auditoria pública assinada implementados.
 
 **Aplicação:** https://elite-dev-verzel-zmats-projects.vercel.app · **API:** https://elite-dev-verzel-api.onrender.com/health · **Código:** https://github.com/matssgit/elite-dev-verzel . Contas de demonstração abaixo usam valores simulados, sem pagamentos reais.

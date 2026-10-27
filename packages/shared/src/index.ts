@@ -40,9 +40,17 @@ export type PublicBid = {id:string; bidderPublicId:string; amountCents:number; s
 export type AuctionRoom = {auction:Auction; bids:PublicBid[]; serverTime:string};
 export type AuctionList = {auctions:Auction[]; serverTime:string};
 export type AuditRecord = {auctionId:string;sequence:number;previousHash:string;payload:Record<string,unknown>;hash:string;signature:string};
+export type AuditTransition = {
+  version:1;scope:'elite-audit-key-transition';id:string;createdAt:string;namespace:string;
+  legacyPublicKey:string;legacyFingerprint:string;legacyKeyStatus:'potentially-compromised';
+  activePublicKey:string;activeFingerprint:string;
+  boundaries:{auctionId:string;sequence:number;hash:string}[];signature:string;
+};
 export type AuditReport = {
   auctionId:string;status:'INTEGRO'|'ADULTERADO'|'PENDENTE';issues:string[];
   records:AuditRecord[];checkpoints:AuditRecord[];publicKey:string;fingerprint:string;legacyBaseline:boolean;
+  activeFingerprint?:string;keyring?:{fingerprint:string;publicKey:string;status:'active'|'historical-potentially-compromised'}[];
+  transition?:AuditTransition;transitionHash?:string;signatureKeys?:{sequence:number;fingerprint:string}[];
 };
-export type Receipt = {id:string;auctionId:string;item:ItemSnapshot;amountCents:number;winnerPublicId:string;endedAt:string;settledAt:string;record:AuditRecord;verification:'INTEGRO'|'ADULTERADO'|'PENDENTE'};
+export type Receipt = {id:string;auctionId:string;item:ItemSnapshot;amountCents:number;winnerPublicId:string;endedAt:string;settledAt:string;record:AuditRecord;verification:'INTEGRO'|'ADULTERADO'|'PENDENTE';signingFingerprint?:string;transitionHash?:string};
 export type Result = {auction:Auction;receiptId:string|null;won:boolean;amountCents:number|null};

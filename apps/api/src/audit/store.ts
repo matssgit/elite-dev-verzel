@@ -3,17 +3,11 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, readdir, open, link, unlink, realpath } from 'node:fs/promises';
 import { resolve, join, isAbsolute, relative } from 'node:path';
 import { projectRoot } from '../config.js';
-import type { AuditRecord } from '@elite/shared';
+import type { AuditRecord,AuditTransition } from '@elite/shared';
 import { BlobCheckpoints } from './blob.js';
-
-export function canonical(value:unknown):string {
-  if(value===null || typeof value==='boolean' || typeof value==='string')return JSON.stringify(value);
-  if(typeof value==='number' && Number.isFinite(value))return JSON.stringify(value);
-  if(Array.isArray(value))return `[${value.map(canonical).join(',')}]`;
-  if(typeof value==='object' && value)return `{${Object.keys(value).sort().map(k=>`${JSON.stringify(k)}:${canonical((value as Record<string,unknown>)[k])}`).join(',')}}`;
-  throw new Error('Invalid canonical JSON');
-}
-export const digest=(value:unknown)=>createHash('sha256').update(canonical(value)).digest('hex');
+import { canonical,digest } from './crypto.js';
+import { parseTransition,signatureFingerprint,assertBoundary } from './rotation.js';
+export { canonical,digest } from './crypto.js';
 function unsigned(record:AuditRecord){return {version:1,auctionId:record.auctionId,sequence:record.sequence,previousHash:record.previousHash,payload:record.payload};}
 export async function assertPersistentMount(directory:string) {
   const mount=process.env.AUDIT_MOUNT_PATH;
@@ -36,15 +30,29 @@ async function writeOnce(path:string,data:string) {
   finally{await unlink(temporary).catch(()=>{});}
 }
 export class AuditStore {
-  private constructor(readonly directory:string,private key:ReturnType<typeof createPrivateKey>,readonly publicKey:string,private remote?:BlobCheckpoints){}
-  static async openBlob(token:string,prefix:string,pem:string,expectedFingerprint:string) {
+  private constructor(readonly directory:string,private key:ReturnType<typeof createPrivateKey>,readonly publicKey:string,private remote?:BlobCheckpoints,readonly transition?:AuditTransition){}
+  static async openBlob(token:string,prefix:string,pem:string,expectedFingerprint:string,rotation?:{json:string;hash:string}) {
     if(!pem || !/^[a-f0-9]{64}$/.test(expectedFingerprint))throw new Error('Blob audit requires protected signing key and pinned fingerprint');
     const key=createPrivateKey(pem.replace(/\\n/g,'\n'));
     const publicKey=createPublicKey(key).export({type:'spki',format:'pem'}).toString();
+    if(key.asymmetricKeyType!=='ed25519')throw new Error('Ed25519 signing key required');
+    const transition=rotation?parseTransition(rotation.json,rotation.hash,expectedFingerprint):undefined;
+    if(transition&&(transition.namespace!==prefix||transition.activePublicKey!==publicKey))throw new Error('Transition namespace/key mismatch');
     const remote=new BlobCheckpoints(token,prefix);
-    const store=new AuditStore(`blob:${prefix}`,key,publicKey,remote);
+    const store=new AuditStore(`blob:${prefix}`,key,publicKey,remote,transition);
     if(store.fingerprint!==expectedFingerprint)throw new Error('Audit signing key does not match configured public fingerprint');
-    await remote.writeOnce('public.pem',publicKey);
+    const guard=await remote.read('rotation.json');
+    if(!transition&&guard!==null)throw new Error('Rotation active: legacy-only runtime refused');
+    if(transition) {
+      if(await remote.read('public.pem')!==transition.legacyPublicKey)throw new Error('Historical public pin mismatch');
+      const marker=canonical({version:1,transitionId:transition.id,transitionHash:digest(transition),activeFingerprint:transition.activeFingerprint});
+      if(guard!==null&&guard!==marker)throw new Error('Independent rotation guard mismatch');
+      // Validate all pinned historical prefixes BEFORE any rotation publication.
+      for(const boundary of transition.boundaries)await store.checkpoints(boundary.auctionId);
+      await remote.writeOnce(`keys/${transition.activeFingerprint}.pem`,publicKey);
+      await remote.writeOnce(`transitions/${transition.id}.json`,canonical(transition));
+      await remote.writeOnce('rotation.json',marker);
+    }else await remote.writeOnce('public.pem',publicKey);
     return store;
   }
   static async open(directory:string) {
@@ -71,12 +79,26 @@ export class AuditStore {
     return new AuditStore(directory,key,publicKey);
   }
   get fingerprint(){return createHash('sha256').update(this.publicKey).digest('hex');}
+  get trustMetadata(){
+    if(!this.transition)return {};
+    const t=this.transition;
+    return {activeFingerprint:this.fingerprint,transition:t,transitionHash:digest(t),keyring:[{fingerprint:t.legacyFingerprint,publicKey:t.legacyPublicKey,status:'historical-potentially-compromised' as const},{fingerprint:t.activeFingerprint,publicKey:t.activePublicKey,status:'active' as const}]};
+  }
+  signingFingerprint(record:Pick<AuditRecord,'auctionId'|'sequence'>){return this.transition?signatureFingerprint(record,this.transition):this.fingerprint;}
+  assertBoundary(records:AuditRecord[],auctionId:string){if(this.transition)assertBoundary(records,auctionId,this.transition);}
   sign(auctionId:string,sequence:number,previousHash:string,payload:Record<string,unknown>):AuditRecord {
-    const record={auctionId,sequence,previousHash,payload,hash:'',signature:''};
+    if(this.transition&&this.signingFingerprint({auctionId,sequence})!==this.fingerprint)throw new Error('Cannot re-sign historical boundary');
+    const record={auctionId,sequence,previousHash,payload:this.transition?{...payload,signingKeyFingerprint:this.fingerprint}:payload,hash:'',signature:''};
     record.hash=digest(unsigned(record));record.signature=sign(null,Buffer.from(record.hash,'hex'),this.key).toString('base64');return record;
   }
   valid(record:AuditRecord) {
-    try{return digest(unsigned(record))===record.hash && verify(null,Buffer.from(record.hash,'hex'),this.publicKey,Buffer.from(record.signature,'base64'));}catch{return false;}
+    try{
+      const fp=this.signingFingerprint(record),t=this.transition;
+      const key=t&&fp===t.legacyFingerprint?t.legacyPublicKey:this.publicKey;
+      if(t&&fp===t.activeFingerprint&&record.payload.signingKeyFingerprint!==fp)return false;
+      if(t&&fp===t.legacyFingerprint&&record.payload.signingKeyFingerprint!==undefined&&record.payload.signingKeyFingerprint!==fp)return false;
+      return digest(unsigned(record))===record.hash && verify(null,Buffer.from(record.hash,'hex'),key,Buffer.from(record.signature,'base64'));
+    }catch{return false;}
   }
   async checkpoints(auctionId:string):Promise<AuditRecord[]> {
     if(!/^[a-f0-9-]{36}$/.test(auctionId))throw new Error('Invalid auction id');
@@ -91,6 +113,7 @@ export class AuditStore {
         records.push(record);
       }
       if(records.some((r,i)=>r.sequence!==i || r.previousHash!==(i?records[i-1]!.hash:'0'.repeat(64))))throw new Error('Independent checkpoint chain has gaps');
+      this.assertBoundary(records,auctionId);
       return records;
     }
     const directory=join(this.directory,'checkpoints',auctionId);
@@ -109,8 +132,11 @@ const stores=new Map<string,Promise<AuditStore>>();
 export function auditStore(directory?:string) {
   if(!directory && process.env.AUDIT_STORAGE==='blob') {
     const prefix=process.env.AUDIT_BLOB_PREFIX??'elite-v1/';const id=`blob:${prefix}`;
-    if(!stores.has(id))stores.set(id,AuditStore.openBlob(process.env.BLOB_READ_WRITE_TOKEN??'',prefix,process.env.AUDIT_PRIVATE_KEY??'',process.env.AUDIT_PUBLIC_KEY_FINGERPRINT??''));
-    return stores.get(id)!;
+    const json=process.env.AUDIT_TRANSITION_JSON,hash=process.env.AUDIT_TRANSITION_SHA256;
+    if(Boolean(json)!==Boolean(hash))throw new Error('Both transition document and trusted hash are required');
+    const cacheId=`${id}:${process.env.AUDIT_PUBLIC_KEY_FINGERPRINT??''}:${hash??''}`;
+    if(!stores.has(cacheId))stores.set(cacheId,AuditStore.openBlob(process.env.BLOB_READ_WRITE_TOKEN??'',prefix,process.env.AUDIT_PRIVATE_KEY??'',process.env.AUDIT_PUBLIC_KEY_FINGERPRINT??'',json&&hash?{json,hash}:undefined));
+    return stores.get(cacheId)!;
   }
   if(process.env.NODE_ENV==='production'&&!process.env.AUDIT_DIRECTORY)throw new Error('AUDIT_DIRECTORY must point to persistent independent storage in production');
   const path=resolve(projectRoot,directory??process.env.AUDIT_DIRECTORY??'var/audit');

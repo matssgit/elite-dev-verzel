@@ -57,7 +57,7 @@ export async function getReceipt(db:Database,id:string):Promise<Receipt> {
   if(!row)throw new AppError(404,'RECEIPT_NOT_FOUND','Comprovante não encontrado.');
   const report=await auditReport(db,row.auctionId);const record=report.records.find(r=>r.payload.type==='SETTLE');
   if(!record)throw new AppError(409,'AUDIT_CORRUPTED','Não há registro de liquidação verificável.');
-  return {id:row.id,auctionId:row.auctionId,item:row.item,amountCents:row.amountCents,winnerPublicId:row.winnerPublicId,endedAt:row.endedAt.toISOString(),settledAt:row.settledAt.toISOString(),record,verification:report.status};
+  return {id:row.id,auctionId:row.auctionId,item:row.item,amountCents:row.amountCents,winnerPublicId:row.winnerPublicId,endedAt:row.endedAt.toISOString(),settledAt:row.settledAt.toISOString(),record,verification:report.status,signingFingerprint:report.signatureKeys?.find(k=>k.sequence===record.sequence)?.fingerprint??report.fingerprint,transitionHash:report.transitionHash};
 }
 export async function myResults(db:Database,user:PublicUser) {
   const all=await listAuctions(db,user.role==='LEILOEIRO'?user.id:undefined,user.role==='LICITANTE'?user.id:undefined);

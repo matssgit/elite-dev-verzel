@@ -1,5 +1,7 @@
 # Matriz de requisitos
 
+Fase 2 autorizada: suporte multichave e transição verificável implementados/testados localmente (62 testes), sem alterar checkpoints anteriores. Ainda pendente geração protegida/aplicação da chave real e validação nova em produção após redeploy. Nenhuma garantia retroativa de autenticidade. API/função continuam em manutenção e cron pausado.
+
 Atualização 26/10 às 21:04: ensaio financeiro simulado pós-rotação aprovado, com débito/crédito únicos de R$50, reserva liberada, comprovante acessível, checkpoint único válido e repetição sem alteração do snapshot financeiro. Cinco auditorias/15 checkpoints conferidos, 14 anteriores preservados; nenhuma movimentação inesperada observada. Manutenção e cron pausado preservados. Fase 2 somente preparada; assinatura ainda não rotacionada. Execução manual não demonstra disparo automático pós-rotação do cron.
 
 Sprint 5: SQL/Blob substituídos pelo operador; API/função conectam com ambiente atualizado, leitura/escrita Blob e invariantes financeiras verificadas. Cinco auditorias/14 checkpoints e três comprovantes preservados. Manutenção ativa e cron pausado; liquidação financeira pós-rotação não executada. Transição da chave potencialmente comprometida ainda pendente. Persistência após redeploy confirmada; **suspensão física histórica inconclusiva**. Validações funcionais abaixo não equivalem a segurança operacional plena. Evidências em DEV_STATUS/DEPLOY/SECURITY_ROTATION. Nenhum recurso pago autorizado.

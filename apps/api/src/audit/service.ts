@@ -38,6 +38,7 @@ export async function checkHistory(tx:Transaction,lot:Lot,store:AuditStore):Prom
     if(record.sequence!==index || record.previousHash!==previous || !store.valid(record))issues.push(`Cadeia ou assinatura inválida no evento ${record.sequence}.`);
     previous=record.hash;
   }
+  try{store.assertBoundary(records,lot.id);}catch{issues.push('Fronteira de transição ausente, divergente ou revertida.');}
   const root=records[0];
   if(!root || root.payload.type!=='OPEN' || Object.entries(lotIdentity(lot)).some(([key,value])=>root.payload[key]!==value))issues.push('Identidade do lote diverge da abertura assinada.');
   const events=records.filter(r=>r.payload.type==='BID');
@@ -86,10 +87,10 @@ export async function auditReport(db:Database,id:string):Promise<AuditReport> {
     if(!lot) {
       const checkpoints=await store.checkpoints(id);
       if(!checkpoints.length)throw new AppError(404,'AUCTION_NOT_FOUND','Lote não encontrado.');
-      return {auctionId:id,status:'ADULTERADO',issues:['Lote removido do banco, mas existem checkpoints independentes.'],records:[],checkpoints,publicKey:store.publicKey,fingerprint:store.fingerprint,legacyBaseline:checkpoints[0]?.payload.legacyBaseline===true};
+      return {auctionId:id,status:'ADULTERADO',issues:['Lote removido do banco, mas existem checkpoints independentes.'],records:[],checkpoints,publicKey:store.publicKey,fingerprint:store.fingerprint,legacyBaseline:checkpoints[0]?.payload.legacyBaseline===true,...store.trustMetadata};
     }
     const report=await checkHistory(tx,lot,store);
     const anchored=report.records.length>0 && report.checkpoints.length===report.records.length;
-    return {...report,status:report.issues.length?'ADULTERADO':anchored?'INTEGRO':'PENDENTE',publicKey:store.publicKey,fingerprint:store.fingerprint};
+    return {...report,status:report.issues.length?'ADULTERADO':anchored?'INTEGRO':'PENDENTE',publicKey:store.publicKey,fingerprint:store.fingerprint,...store.trustMetadata,signatureKeys:report.records.map(r=>({sequence:r.sequence,fingerprint:store.signingFingerprint(r)}))};
   });
 }

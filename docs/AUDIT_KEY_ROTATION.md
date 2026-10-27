@@ -1,5 +1,41 @@
 # Fase 2 — preparação da transição Ed25519
 
+## Implementação autorizada — estado atual
+
+O usuário autorizou iniciar a fase 2 após o ensaio. Suporte a múltiplas chaves implementado no backend, contratos, comprovantes, página e CLI. Eventos novos identificam a chave em `payload.signingKeyFingerprint`, dentro do conteúdo assinado; os antigos permanecem byte a byte intactos e recebem identificação no mapa público `signatureKeys`, determinada pelo manifesto/fronteiras. Sem migration ou reassinatura.
+
+O runtime exige o hash público independente do manifesto (`AUDIT_TRANSITION_SHA256`), a nova fingerprint e a assinatura do manifesto pela nova chave. Confere o pin histórico remoto e todas as fronteiras antes de publicar novos objetos. `elite-v1/public.pem` permanece histórico; a chave nova usa `keys/<fingerprint>.pem`, o manifesto `transitions/<id>.json`, e `rotation.json` é marcador persistente que recusa consumidores atualizados configurados apenas com a chave antiga. A aplicação publica sem sobrescrita; isso não adiciona WORM ao Blob.
+
+**Ainda não existe chave nova de produção nem manifesto final.** A geração/inserção exige handoff nativo, respeitando a restrição anterior de não transportar novos segredos pelo terminal do agente. Não há necessidade de repetir autorização do escopo. O próximo passo humano é somente gerar/proteger a chave e preparar o manifesto público; não aplicar configurações antes de sua revisão.
+
+Validação: 62 testes aprovados, incluindo cadeia mista com liquidação PostgreSQL em schema local isolado, comprovante com identidade correta, recuperação da outbox, preservação dos objetos, rejeição de rollback/manifestações falsas/sufixos da chave antiga. TypeScript/lint/build aprovados. Scripts nativos passaram análise sintática; o fluxo de DPAPI/clipboard com chave real ainda depende da execução manual. Não declarar rotação efetiva nem persistência da chave nova em produção antes dessa etapa.
+
+### Ação manual 1: preparação, sem corte
+
+1. Abra **PowerShell nativo do Windows**, sem gravação/transcrição de sessão. Não use o terminal automatizado do agente. Não cole chaves na conversa.
+2. Execute:
+
+   ```powershell
+   cd F:\teste-verzel
+   node .\scripts\prepare-audit-key.mjs
+   ```
+
+3. O script verifica as cinco auditorias contra a fronteira revisada antes de gerar qualquer chave. Se houver divergência/indisponibilidade, interrompe. Gera Ed25519 em memória e grava apenas uma cópia cifrada por DPAPI do usuário Windows em `var/audit-key-rotation/new-private-key.dpapi`, com ACL do usuário/SYSTEM, ignorada pelo Git. Nunca imprime/grava a chave privada em texto puro. Não sobrescreve preparação existente.
+4. Cria `docs/AUDIT_SIGNING_TRANSITION.json`, documento **público** com chaves públicas, fronteiras e assinatura nova; mostra somente fingerprint/hash públicos. Não modifica Render, Neon, Blob, flags ou cron. Não envia segredos pela rede nessa preparação.
+5. Avise apenas **“preparação da chave concluída”**. O agente revisará o documento público e sua assinatura, confrontará novamente os 15 checkpoints e publicará/fixará os pins antes do corte.
+
+O arquivo DPAPI só pode ser aberto pela mesma identidade Windows e pode se tornar inacessível após perda do perfil/SID. Não copiá-lo para a conversa ou Git. O conteúdo permanece transitório na memória dos processos nativos; DPAPI não protege uma máquina/conta já comprometida. Falha posterior à gravação deve ser investigada sem regenerar/sobrescrever automaticamente.
+
+### Ação manual 2: consumidores, somente depois da revisão
+
+O script `scripts/configure-audit-key.ps1 -ExpectedTransitionHash <HASH_PUBLICO_REVISADO>` está preparado, **não executar ainda**. Confere o manifesto/pin e que a chave privada cifrada corresponde à sucessora; copia cada valor diretamente para clipboard para inserção nos quatro campos Render: `AUDIT_PRIVATE_KEY`, `AUDIT_PUBLIC_KEY_FINGERPRINT`, `AUDIT_TRANSITION_JSON`, `AUDIT_TRANSITION_SHA256`. A chave usa quebras `\n` literais. Limpa clipboard entre campos e ao terminar; mantenha histórico/sincronização do clipboard desativados antes dessa etapa.
+
+Preserva `FINANCIAL_MAINTENANCE=true` e `RUN_SETTLEMENT_JOBS=false`. Após salvar/rebuild/redeploy do Render, solicita `APLICAR` no terminal nativo e implanta `deploy/neon-audit-key.ts` na função existente, por ambiente protegido herdado; SQL/Blob omitidos e preservados. Nenhum segredo em argv/arquivo texto/log. O hash passado no comando é público. Pode haver indisponibilidade da auditoria entre os dois consumidores: o guard recusa runtime antigo; cron/escritas continuam bloqueados.
+
+Após o usuário confirmar a configuração: conferir os 15 checkpoints e comprovantes antigos, mapa de chaves, manifesto/pins e guard; gerar prova nova assinada em namespace de validação separado (ou um fluxo demo específico autorizado), verificar por CLI e leitura pública, redeployar ambos os consumidores e repetir as leituras. Não reabrir automaticamente.
+
+As seções originais abaixo descrevem o plano e critérios; a implementação acima não equivale ao corte concluído.
+
 Preparado em 26/10/2026 após o ensaio simulado das 21:03 (America/Sao_Paulo). **Não houve geração/troca de chave, troca de pin ou autorização de corte.** API/função continuam em manutenção e o cron continua pausado. Este documento é o plano concreto da implementação seguinte, não uma rotação concluída.
 
 ## Fronteira histórica preservada
