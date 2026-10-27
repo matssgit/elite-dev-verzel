@@ -1,14 +1,8 @@
 # Auditoria: algoritmo, confiança e limites
 
-**27/10 às 13:30 — revisão da substituta:** novo manifesto público AUDIT_SIGNING_REPLACEMENT.json aprovado, fingerprint 07e8…94ab2, hash canônico fixado em AUDIT_KEY_RECOVERY.md. Cinco fronteiras/15 checkpoints preservados. Configuração segura por HTTPS nativo preparada; privada não foi aberta pelo agente e nenhum consumidor recebeu a nova chave ainda. Recuperação/manutenção/cron pausado continuam. Ver limites e etapas restantes em AUDIT_KEY_RECOVERY.md.
+**Estado atual, 27/10 às 14:00:** chave ativa 07e8…94ab2 verificada em Render/Neon, com manifesto aprovado, assinaturas históricas e prova nova conferidas independentemente. Quinze checkpoints/assinaturas originais e quatro comprovantes preservados após redeploy que recusa recriação de objetos ausentes. Manutenção financeira ativa e cron pausado. Evidências, pins completos, caminhos remotos e recuperação em [AUDIT_KEY_VERIFICATION.md](AUDIT_KEY_VERIFICATION.md).
 
-**27/10 — incidente aberto:** as duas identidades anteriores estão comprometidas para assinatura futura. A candidata preparada não deve ser aplicada/reutilizada. Quinze históricos/checkpoints e assinaturas originais foram conferidos no runtime sem revelar dados privados; o estado financeiro observado também permanece igual. Recuperação e manutenção ativas; cron pausado. A correspondência criptográfica no Render foi confirmada, mas sua chave está exposta; Neon ainda usa a raiz exposta. Nova recuperação e limites em [AUDIT_KEY_RECOVERY.md](AUDIT_KEY_RECOVERY.md). Aprovações anteriores abaixo estão retiradas.
-
-**Fase 2 autorizada, manifesto revisado:** verificação multichave, identificação assinada em eventos novos e mapa público para os antigos, manifesto assinado/pinado e fronteiras contra rollback implementados. Suíte inicial e testes adicionais aprovados, incluindo CI de 21fa48f. Chave nova gerada/protegida pelo operador e manifesto público revisado em 26/10 às 21:39; aplicação nos consumidores ainda pendente, conforme [AUDIT_KEY_ROTATION.md](AUDIT_KEY_ROTATION.md). Não declarar corte ou persistência da nova identidade em produção antes das verificações reais. Manutenção ativa e cron pausado.
-
-**Ensaio de 26/10 às 21:03:** somente o lote demo original recebeu um novo SETTLE/checkpoint, sem dinheiro real. Agora são 15 checkpoints em cinco lotes; os 14 anteriores foram preservados e o CLI independente conferiu todas as cadeias. O novo objeto permaneceu verificável após redeploy da função. A chave antiga não foi substituída. Preparação da transição, fronteiras e testes exigidos em [AUDIT_KEY_ROTATION.md](AUDIT_KEY_ROTATION.md); captura pública em [AUDIT_ROTATION_BOUNDARY.json](AUDIT_ROTATION_BOUNDARY.json), ainda sem sucessora ou autorização de corte. Notas anteriores de 14 checkpoints referem-se ao estado pré-ensaio.
-
-**Sprint 5 — assinatura ainda pendente:** SQL/Blob foram substituídos pelo operador; a função comprovou leitura/escrita no store e a API leu os históricos com o ambiente atualizado. Os 14 checkpoints dos cinco lotes permanecem idênticos e verificáveis. A chave privada anterior continua potencialmente comprometida: isso impede declarar autoria legítima apenas pela assinatura. Não houve troca de chave/pin, exclusão ou reassinatura de eventos. Procedimento/evidências em [SECURITY_ROTATION.md](SECURITY_ROTATION.md).
+A raiz dc33…ece3 e a candidata retirada cf2d…9c91 continuam comprometidas para assinatura futura. Public keys e manifestos históricos são conservados; assinaturas antigas não foram refeitas. O novo manifesto fixa a chave aplicável por lote/sequência e a fronteira observada. Verificação pública expõe keyring e identidade inequívoca por assinatura; novos eventos incluem a fingerprint dentro do payload assinado. Isso não garante retroativamente autoria legítima nem adiciona WORM ao Blob. Histórico do procedimento em AUDIT_KEY_RECOVERY.md e SECURITY_ROTATION.md.
 
 ## Modelo de ameaça
 
@@ -16,7 +10,7 @@ A proteção implementada considera um invasor com escrita no PostgreSQL, inclus
 
 Em desenvolvimento, checkpoints ficam em AUDIT_DIRECTORY/checkpoints/<auctionId>/<sequence>.json e a chave local é ignorada pelo Git. A produção gratuita usa AUDIT_STORAGE=blob e objetos privados elite-v1/checkpoints/<auctionId>/<sequence>.json, fora do PostgreSQL. Chave Ed25519 PKCS8 e token ficam em variáveis protegidas; fingerprint pública obrigatória. O backend não os devolve em endpoints. O modo de arquivos em produção continua exigindo mount persistente verificado e não é utilizado no Render Free.
 
-Persistência de checkpoints/chave após redeploy real da API e função foi conferida. Não há WORM/retention lock nem prova de independência contra administrador das plataformas. O token Blob permite excluir/substituir objetos fora do caminho write-once da aplicação. Comprometimento conjunto de banco, token e chave permite forjar evidências. Rotação pendente impede declarar a proteção operacional plenamente validada; não há alegação de inviolabilidade.
+Persistência de checkpoints/chave após redeploy real da API e função foi conferida. Não há WORM/retention lock nem prova de independência contra administrador das plataformas. O token Blob permite excluir/substituir objetos fora do caminho write-once da aplicação. Comprometimento conjunto de banco, token e chave permite forjar evidências. Rotação e persistência da identidade nova foram verificadas, mas os limites de acesso conjunto e autenticidade histórica permanecem; não há alegação de inviolabilidade.
 
 ## Cálculo e assinatura
 
@@ -53,7 +47,7 @@ Detecta alteração de registros, remoção intermediária/sufixo/cadeia inteira
 Baixe JSON na página e obtenha a impressão digital da chave **por canal independente e confiável** (responsável pelo projeto, repositório revisado/publicado). A página entregar sua própria chave não basta contra comprometimento do próprio servidor.
 
 ```sh
-node scripts/verify-audit.mjs evidencia.json FINGERPRINT_CONFIAVEL
+node scripts/verify-audit.mjs evidencia.json dc3370282c6119b2a77433fc95c0c84fa6868b23f77e8d6ffd7027d872f3ece3 126e42c16b21a5b7e3256c507e96eead53bb0a956e94f741928b04505c0e25a1
 ```
 
 O verificador confere chave, assinaturas, cadeia e checkpoints exportados, além das divergências reportadas pela API. Ele não consulta diretamente o banco nem certifica que o export é o estado mais recente: para frescor, retenha checkpoints anteriores/consulte canal externo. A comparação entre dados operacionais e eventos é executada pelo backend confiável no modelo de ameaça.

@@ -1,8 +1,6 @@
 # Elite Dev Verzel
 
-**27/10 — manutenção por incidente de chave:** as duas identidades anteriores foram retiradas após relato de exposição. API e função em recuperação read-only, sem operações financeiras e com cron pausado; 15 checkpoints preservados. Não use as instruções antigas de clipboard. Estado e próximo passo em [AUDIT_KEY_RECOVERY](docs/AUDIT_KEY_RECOVERY.md); substituição efetiva nos dois consumidores ainda pendente.
-
-Rotação de assinatura em andamento: suporte multichave e fronteiras implementados/testados; chave nova gerada pelo operador e manifesto público revisado, aguardando aplicação coordenada. Consulte os [passos nativos da fase 2](docs/AUDIT_KEY_ROTATION.md). Manutenção e cron pausado continuam ativos; a chave antiga ainda não foi substituída nos consumidores.
+**27/10 — rotação da assinatura verificada:** Render e Neon utilizam a chave nova 07e8…94ab2. Quinze checkpoints/assinaturas históricas e quatro comprovantes preservados; manifesto e prova nova conferidos após redeploy sem recriação. **Manutenção financeira ativa e cron pausado, aguardando autorização.** Evidências, pins e recuperação em [AUDIT_KEY_VERIFICATION](docs/AUDIT_KEY_VERIFICATION.md).
 
 Casa de leilões online do desafio técnico Verzel. **Etapa atual: Sprint 5 — segurança e preparação de entrega.** Fluxo de leilões com catálogo/snapshots, lances concorrentes, carteira, anti-sniping, WebSocket, encerramento/liquidação automática, resultados, comprovantes compartilháveis e auditoria pública assinada implementados.
 
@@ -10,7 +8,7 @@ Casa de leilões online do desafio técnico Verzel. **Etapa atual: Sprint 5 — 
 
 Opção gratuita aprovada: Vercel Hobby, Render Free, Neon Free, Blob privado e função Neon agendada por minuto. A API pode levar aproximadamente um minuto para reativar após ociosidade; a liquidação executa diretamente no Neon, independentemente do processo da API. Checkpoints ficam fora do PostgreSQL; chave estável em variáveis protegidas. Storage não é WORM: acesso à chave/token/contas administrativas está fora da proteção contra adulteração apenas do banco. Evidências e limites em [DEPLOY](docs/DEPLOY.md) e [AUDIT](docs/AUDIT.md). Recursos pagos continuam não autorizados; não aplicar `deploy/render.paid.yaml`.
 
-**Estado de segurança e operação:** SQL/Blob substituídos e consumidores verificados; ensaio simulado pós-rotação de R$50 aprovado, incluindo idempotência, comprovante e checkpoint. Manutenção financeira permanece ativa e cron pausado até autorização de reabertura. A chave de assinatura anterior continua potencialmente comprometida; a [fase 2 foi preparada](docs/AUDIT_KEY_ROTATION.md), sem troca de chave. INTEGRO não elimina esse risco. Evidências e limitações em [SECURITY_ROTATION](docs/SECURITY_ROTATION.md). Ambiente somente de demonstração, com valores simulados.
+**Estado de segurança e operação:** SQL/Blob e chave ativa substituídos, com consumidores verificados. As identidades expostas são recusadas para assinatura futura; permanecem públicas para verificação histórica delimitada. INTEGRO não garante origem legítima retroativa dos registros antigos, e Blob não é WORM. Evidências e limitações em [AUDIT_KEY_VERIFICATION](docs/AUDIT_KEY_VERIFICATION.md). Ambiente somente de demonstração, com valores simulados e finanças bloqueadas.
 
 ## Stack e organização
 
@@ -110,7 +108,7 @@ Desenvolvimento: var/audit contém chave e checkpoints locais, ignorados no Git.
 Para verificar uma evidência JSON baixada sem modificar datas/campos:
 
 ```sh
-node scripts/verify-audit.mjs evidencia.json FINGERPRINT_CONFIAVEL
+node scripts/verify-audit.mjs evidencia.json dc3370282c6119b2a77433fc95c0c84fa6868b23f77e8d6ffd7027d872f3ece3 126e42c16b21a5b7e3256c507e96eead53bb0a956e94f741928b04505c0e25a1
 ```
 
 Obter fingerprint por canal independente confiável; a chave entregue pela própria página não é confiança suficiente contra invasão do servidor. Checkpoint ausente gera PENDENTE; divergência gera ADULTERADO e bloqueia operações financeiras. CHECKPOINT_PENDING após commit indica operação registrada: não refazer lance com outra chave.

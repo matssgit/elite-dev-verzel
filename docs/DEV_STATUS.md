@@ -1,4 +1,6 @@
-# Status DEV — Sprint 5 — 26/10/2026
+# Status DEV — Sprint 5 — 27/10/2026
+
+**Estado atual, 14:00:** rotação da chave ativa concluída/verificada nos dois consumidores (07e8…94ab2), com fronteira/manifesto aprovados. Quinze checkpoints/assinaturas antigos inalterados, quatro comprovantes acessíveis, prova nova assinada fora do histórico financeiro; persistência comprovada após redeploy exigindo objetos preexistentes. Snapshot financeiro igual; nenhuma nova movimentação. FINANCIAL_MAINTENANCE=true, RUN_SETTLEMENT_JOBS=false, AUDIT_RECOVERY_MODE=false; cron disabled. Ativação apenas criptográfica, sem reabertura financeira. Evidências, IDs/pins, testes, limitações e recuperação em AUDIT_KEY_VERIFICATION.md. As notas de etapas anteriores abaixo são históricas.
 
 **Pré-validação HTTPS reforçada após 503:** diagnósticos Render/Neon novamente HTTP 200, 15 checkpoints/snapshot intactos, recuperação/manutenção ativas e cron pausado. Manifesto substituto aprovado permanece igual. GETs agora têm até quatro tentativas limitadas; integridade/JSON inválido/auth/TLS interrompem imediatamente e nenhum upload é repetido automaticamente. 14 fixtures PowerShell, testes do transporte existente e GETs reais aprovados. Não houve leitura de DPAPI/token nem alteração de consumidor; procedimento compatível com o Render Live 4aedfa2. Ver AUDIT_KEY_RECOVERY.md.
 
@@ -78,7 +80,7 @@ Provas da Sprint 4 preservadas: corrida no mesmo lote e entre lotes, liberação
 ## Pendências e bloqueios
 
 1. Configuração SQL/Blob e ensaio controlado de R$50 concluídos. Credenciais antigas não foram testadas diretamente; expiração imediata Blob foi informada pelo operador. Cron continua pausado: o ensaio foi execução manual restrita, não prova pós-rotação do trigger agendado. Reabertura aguarda autorização.
-2. Implementação/testes da transição criptográfica e confirmação separada antes de trocar a identidade de produção. Não há restauração de autenticidade retroativa de uma chave comprometida.
+2. Transição criptográfica implementada, aplicada e verificada com prova nova e persistência após redeploy. Permanece pendente autorização de reabertura financeira e validação do disparo do cron depois de retomá-lo; não há restauração de autenticidade retroativa de uma chave comprometida.
 3. Suspensão física histórica classificada como inconclusiva; liquidação independente confirmada.
 4. Franquias gratuitas, cold start e indisponibilidade eventual; manter sem upgrade e sem forma de pagamento Render. Não prometer disponibilidade gratuita indefinida.
 5. Seed não renova lotes vencidos. Conferir lote ativo na data da avaliação e criar novo pelo painel se necessário, sem alterar prazos/saldos existentes.

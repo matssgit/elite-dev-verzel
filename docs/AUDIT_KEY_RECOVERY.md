@@ -1,5 +1,7 @@
 # Recuperação após exposição de chaves — 27/10/2026
 
+**Conclusão técnica às 14:00:** configuração/ativação criptográfica nova concluídas e verificadas após redeploy, com 15 históricos e comprovantes antigos preservados e prova nova válida. Manutenção financeira e cron pausado continuam. Os scripts de geração/upload abaixo descrevem etapas já concluídas, não devem ser repetidos. Pins ativos, evidências e recuperação pós-corte em [AUDIT_KEY_VERIFICATION.md](AUDIT_KEY_VERIFICATION.md). As limitações do incidente permanecem: sem garantia retroativa e sem WORM.
+
 ## Pré-validação tolerante à inicialização, sem repetir uploads
 
 Após relato de HTTP 503 na consulta do script, ambos os diagnósticos responderam HTTP 200 em nova conferência. Render segue Live em 4aedfa2, com manutenção/recuperação ativas, jobs desativados, 15 checkpoints preservados e snapshot financeiro igual; Neon confirma as mesmas condições e cron segue disabled (version 9841168, next_run_at=null). O manifesto novo permanece com hash `126e42c16b21a5b7e3256c507e96eead53bb0a956e94f741928b04505c0e25a1`, validado novamente. Não foi aberta chave DPAPI, solicitado token ou executado upload.
