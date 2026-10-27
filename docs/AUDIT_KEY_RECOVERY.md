@@ -2,6 +2,8 @@
 
 ## Estado confirmado, antes de qualquer reativação
 
+Conferência final às 12:59 de 27/10: código 4aedfa2 ativo no Render (`dep-dbgcjt0u01pc73aomag0`, live) e função atualizada em recuperação. CI aprovado: https://github.com/matssgit/elite-dev-verzel/actions/runs/40536125587 . Ambos confirmam ausência também dos objetos remotos da chave/manifesto candidatos retirados, além da ausência de rotation.json. Os 15 checkpoints e o snapshot financeiro permanecem idênticos. Evidência agregada sem segredos: tmp/audit-incident-final.json. Nenhum upload de nova chave nem ativação ocorreu.
+
 Incidente informado pelo operador: valor privado usado no procedimento foi exposto em outra conversa. O agente não pediu/leu esse valor nem abriu DPAPI/clipboard. Por precaução, as duas identidades conhecidas estão comprometidas para assinatura futura:
 
 | Identidade pública | Destino |
