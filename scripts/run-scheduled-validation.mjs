@@ -45,7 +45,17 @@ async function oldHistories(){
   let count=0;for(const id of ids){const report=await json(api+'/audit/'+id);assert.equal(report.status,'INTEGRO');assert.equal(report.fingerprint,active);verifyReport(report,root,manifest);assert.deepEqual(report.records,baseline[id].records);assert.deepEqual(report.checkpoints,baseline[id].checkpoints);count+=report.checkpoints.length;}
   assert.equal(count,15);return count;
 }
-async function deploy(env){await cli(['deploy','--config','deploy/neon-scheduled-validation.ts','--no-env-pull'],env);}
+async function applyConfig(config,env={}){
+  // Updating an existing function is explicitly authorized. A successful CLI
+  // exit alone does not attest that the selected source actually was applied.
+  const ack=JSON.parse(await cli(['deploy','--config',config,'--update-existing','--no-env-pull','--output','json'],env));
+  assert.equal(ack.branchId,'br-muddy-mud-b80fr83g');assert.equal(ack.branchName,'production');assert.equal(ack.dryRun,false);assert.equal(ack.conflicts.length,0);
+  const changes=ack.applied.filter(change=>change.action!=='noop');
+  assert.ok(changes.some(change=>change.kind==='service'&&change.action==='update'&&change.details?.slug==='settlement'));
+  assert.ok(changes.every(change=>change.kind==='service'&&change.details?.slug==='settlement'));
+  await record('deployment-confirmed',{config,branch:ack.branchName,slug:'settlement',action:'update'});
+}
+async function deploy(env){await applyConfig('deploy/neon-scheduled-validation.ts',env);}
 try{
   assert.equal(ids.length,5);await maintenance();await oldHistories();
   // This diagnostic belongs to the Neon function, not the normal Render API.
@@ -84,7 +94,7 @@ finally{
   if(prepareAttempted){try{const closed=await control('close','POST');result.cleanup.runClosed=closed.state==='closed';result.closedRun=closed;}catch{result.cleanup.runClosed=false;result.success=false;}}
   if(cronMayBeEnabled){try{await cli(['triggers','update',trigger,'--enabled','false']);result.cleanup.cronPaused=true;}catch{result.cleanup.cronPaused=false;result.success=false;}}
   else result.cleanup.cronPaused=true;
-  if(temporarySource){try{await cli(['deploy','--config','deploy/neon-audit-persistence.ts','--no-env-pull']);result.cleanup.temporarySourceRemoved=true;}catch{result.cleanup.temporarySourceRemoved=false;result.success=false;}}
+  if(temporarySource){try{await applyConfig('deploy/neon-audit-persistence.ts');result.cleanup.temporarySourceRemoved=true;}catch{result.cleanup.temporarySourceRemoved=false;result.success=false;}}
   if(token){try{const response=await fetch(api+'/auth/logout',{method:'POST',headers:{authorization:`Bearer ${token}`,origin:web},signal:AbortSignal.timeout(60000)});result.cleanup.sessionRevoked=response.status===204;}catch{result.cleanup.sessionRevoked=false;}token=undefined;}
   await writeFile(output,JSON.stringify(result,null,2));
 }
