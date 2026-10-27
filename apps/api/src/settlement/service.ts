@@ -7,14 +7,17 @@ import { appendAudit, assertHistory, initializeAudit, flushCheckpoints, auditRep
 import { digest } from '../audit/store.js';
 import { listAuctions } from '../auctions/service.js';
 import type { PublicUser, Receipt } from '@elite/shared';
+import { assertScheduledPermit,assertScheduledLot,type ScheduledPermit } from './scheduled-permit.js';
 
-export async function settleAuction(db:Database,id:string) {
+export async function settleAuction(db:Database,id:string,permit?:ScheduledPermit) {
   return db.transaction(async tx=>{
     const [lot]=await tx.select().from(auctions).where(eq(auctions.id,id)).for('update');
+    if(permit){assertScheduledPermit(permit,id);if(!lot)throw new Error('Scheduled lot missing');assertScheduledLot(permit,lot);}
     if(!lot || lot.cancelledAt || lot.settledAt)return {settled:false};
     const walletIds=[...new Set([lot.ownerId,...(lot.leaderId?[lot.leaderId]:[])])].sort();
     const locked=await tx.select().from(wallets).where(inArray(wallets.userId,walletIds)).orderBy(asc(wallets.userId)).for('update');
     const result=await tx.execute<{now:Date}>(sql`SELECT clock_timestamp() AS now`);const now=new Date(result.rows[0]!.now);
+    if(permit)assertScheduledPermit(permit,id,now);
     if(now<lot.endsAt)return {settled:false};
     await assertHistory(tx,lot);
     let receiptId:string|null=null;let winnerPublicId:string|null=null;
@@ -42,7 +45,13 @@ export async function settleAuction(db:Database,id:string) {
     return {settled:true,receiptId};
   });
 }
-export async function processDue(db:Database,onError:(error:unknown)=>void=()=>{}) {
+export async function processDue(db:Database,onError:(error:unknown)=>void=()=>{},permit?:ScheduledPermit) {
+  if(permit){
+    const time=await db.execute<{now:Date}>(sql`SELECT clock_timestamp() AS now`);assertScheduledPermit(permit,permit.auctionId,new Date(time.rows[0]!.now));
+    const due=await db.select({id:auctions.id}).from(auctions).where(and(eq(auctions.id,permit.auctionId),isNull(auctions.settledAt),isNull(auctions.cancelledAt),sql`${auctions.endsAt} <= clock_timestamp()`));
+    for(const {id}of due)try{await settleAuction(db,id,permit);}catch(error){onError(error);return;}
+    try{await flushCheckpoints(db,permit.auctionId);}catch(error){onError(error);}return;
+  }
   if(process.env.FINANCIAL_MAINTENANCE==='true')return;
   const legacy=await db.select({id:auctions.id}).from(auctions).where(eq(auctions.auditVersion,0)).limit(100);
   for(const {id} of legacy)try{
