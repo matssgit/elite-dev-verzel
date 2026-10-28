@@ -12,6 +12,7 @@ function Send-DemoAuditConfiguration {
         try {$service=Invoke-RestMethod -Method Get -Uri "https://api.render.com/v1/services/$serviceId" -Headers $headers -MaximumRedirection 0 -TimeoutSec 45 -Verbose:$false -Debug:$false -ErrorAction Stop}
         catch {throw 'Cannot verify demo target. No changes sent.'}
         if($service.id -cne $serviceId -or $service.name -cne 'elite-verzel-demo-api' -or $service.ownerId -cne 'tea-d979q6ss728c738vup30' -or $service.serviceDetails.plan -cne 'free' -or $service.branch -cne 'codex/elite-verzel-demo' -or ($service.repo -replace '\.git$','') -cne 'https://github.com/matssgit/elite-dev-verzel'){throw 'Demo target identity/plan mismatch. No changes sent.'}
+        if(-not ([string]$service.serviceDetails.envSpecificDetails.startCommand).StartsWith('node scripts/demo-isolation-preflight.mjs && ')){throw 'Install the demo isolation preflight in Start Command before configuring secrets.'}
         # Apply blocking flags before the identity. No collection replacement.
         foreach($key in @('FINANCIAL_MAINTENANCE','RUN_SETTLEMENT_JOBS','ALLOW_DEMO_SEED','WEB_ORIGIN','AUDIT_PUBLIC_KEY_FINGERPRINT','AUDIT_PRIVATE_KEY')) {
             try {

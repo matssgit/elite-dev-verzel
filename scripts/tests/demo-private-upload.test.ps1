@@ -5,7 +5,7 @@ $script:wrongTarget=$false
 function Invoke-RestMethod {
     param($Method,$Uri,$Headers,$ContentType,$Body,$MaximumRedirection,$TimeoutSec,$Verbose,$Debug,$ErrorAction)
     $script:calls.Add(@{Method=$Method;Uri=$Uri;Body=$Body})
-    if($Method -eq 'Get'){return @{id='srv-dbh86ed9fdbs7387t2m0';name=$(if($script:wrongTarget){'other'}else{'elite-verzel-demo-api'});ownerId='tea-d979q6ss728c738vup30';serviceDetails=@{plan='free'};branch='codex/elite-verzel-demo';repo='https://github.com/matssgit/elite-dev-verzel'}}
+    if($Method -eq 'Get'){return @{id='srv-dbh86ed9fdbs7387t2m0';name=$(if($script:wrongTarget){'other'}else{'elite-verzel-demo-api'});ownerId='tea-d979q6ss728c738vup30';serviceDetails=@{plan='free';envSpecificDetails=@{startCommand='node scripts/demo-isolation-preflight.mjs && fixture-start'}};branch='codex/elite-verzel-demo';repo='https://github.com/matssgit/elite-dev-verzel'}}
     if($Method -eq 'Post'){return @{id='dep-publicfixture'}}
     return @{value='PUBLIC-FIXTURE'}
 }

@@ -27,6 +27,12 @@ A implantação inicial da API pode falhar por DATABASE_URL/chave ausentes: isso
 
 ## Etapa humana necessária — sem enviar segredos
 
+**Antes de inserir qualquer credencial:** em [Settings da API demo](https://dashboard.render.com/web/srv-dbh86ed9fdbs7387t2m0/settings), edite Start Command para o comando abaixo e salve. O MCP disponível não edita esse campo; a navegação automatizada ao painel não carregou, portanto essa edição ainda não foi executada. O helper também recusa configuração enquanto esse prefixo não estiver instalado. O primeiro boot deve falhar fechado por credenciais ausentes, antes de acessar qualquer banco.
+
+```sh
+node scripts/demo-isolation-preflight.mjs && npm run db:migrate:production -w @elite/api && npm run db:seed:production -w @elite/api && npm start -w @elite/api
+```
+
 1. Abra o **novo** projeto Neon elite-verzel-demo, ID shy-base-42585434. Em Connect, escolha conexão direta (pooling desmarcado), TLS. Configure esse valor diretamente como DATABASE_URL na [API demo, Environment](https://dashboard.render.com/web/srv-dbh86ed9fdbs7387t2m0/env). Não usar o projeto cold-haze-51518470.
 2. No Vercel, abra [store demo exclusivo](https://vercel.com/zmats-projects/~/stores/blob/store_UQ7SEOCwcjWKg0zw). Use seu token read-write exclusivo e configure diretamente BLOB_READ_WRITE_TOKEN na mesma API nova. Não usar store_jAwONeQLbcJmOzGK. Salve as duas variáveis no Render; mantenha FINANCIAL_MAINTENANCE=true, RUN_SETTLEMENT_JOBS=false, ALLOW_DEMO_SEED=false. Uma falha temporária de boot antes de configurar a chave é esperada. Não enviar valores na conversa.
 3. Em PowerShell **nativo interativo**, sem transcrição, na raiz F:\teste-verzel, execute `node scripts/prepare-demo-key.mjs`. Não repetir se o diretório já existir. Só informe o fingerprint público e sucesso/erro sanitizado; não abra o DPAPI nem copie a chave.
