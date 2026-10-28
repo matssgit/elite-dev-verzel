@@ -1,0 +1,43 @@
+# NEW isolated service only. Do not attach this Blueprint to existing resources.
+# Application remains financially blocked until target isolation is verified.
+services:
+  - type: web
+    name: elite-verzel-demo-api
+    runtime: node
+    plan: free
+    region: virginia
+    repo: https://github.com/matssgit/elite-dev-verzel
+    branch: codex/elite-verzel-demo
+    autoDeployTrigger: off
+    buildCommand: npm ci --include=dev && node scripts/stamp-function-build.mjs && npm run build -w @elite/api
+    startCommand: npm run db:migrate:production -w @elite/api && npm run db:seed:production -w @elite/api && npm start -w @elite/api
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: WEB_ORIGIN
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: AUDIT_STORAGE
+        value: blob
+      - key: AUDIT_BLOB_PREFIX
+        value: elite-verzel-demo-v1/
+      - key: BLOB_READ_WRITE_TOKEN
+        sync: false
+      - key: AUDIT_PRIVATE_KEY
+        sync: false
+      - key: AUDIT_PUBLIC_KEY_FINGERPRINT
+        sync: false
+      - key: FINANCIAL_MAINTENANCE
+        value: "true"
+      - key: RUN_SETTLEMENT_JOBS
+        value: "false"
+      - key: ALLOW_DEMO_SEED
+        value: "false"
+      - key: AUDIT_RECOVERY_MODE
+        value: "false"

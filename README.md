@@ -1,5 +1,7 @@
 # Elite Dev Verzel
 
+**Revisão de 28/10/2026:** [auditoria final e matriz do edital](docs/FINAL_CHALLENGE_REVIEW.md). Suíte local isolada: 91 testes de API e 4 de interface aprovados. O fluxo local completo foi testado manualmente pelo responsável; a demonstração pública continua com operações financeiras bloqueadas. O requisito de demonstração pública interativa permanece pendente. Nenhuma reabertura está autorizada.
+
 **Entrega em 29/10/2026:** a produção permanece em manutenção e permite consulta; os fluxos financeiros não estão liberados. Para estado atual, pendências e avaliação completa em ambiente local isolado, leia [FINAL_DELIVERY_READINESS](docs/FINAL_DELIVERY_READINESS.md). Notas históricas abaixo não significam que o cron ou as operações públicas estejam ativos hoje.
 
 **27/10, 15:27 — diagnóstico neutro concluído:** autenticação funciona na versão identificada; foram observadas respostas de versões diferentes durante a atualização. Causa interna ainda pendente. Nenhuma nova operação financeira; sessão revogada, manutenção ativa e cron pausado. [Evidências e correção proposta](docs/POST_403_DIAGNOSTIC.md).
@@ -14,7 +16,7 @@ Casa de leilões online do desafio técnico Verzel. **Etapa atual: Sprint 5 — 
 
 **Aplicação:** https://elite-dev-verzel-zmats-projects.vercel.app · **API:** https://elite-dev-verzel-api.onrender.com/health · **Código:** https://github.com/matssgit/elite-dev-verzel . Contas de demonstração abaixo usam valores simulados, sem pagamentos reais.
 
-Opção gratuita aprovada: Vercel Hobby, Render Free, Neon Free, Blob privado e função Neon agendada por minuto. A API pode levar aproximadamente um minuto para reativar após ociosidade; a liquidação executa diretamente no Neon, independentemente do processo da API. Checkpoints ficam fora do PostgreSQL; chave estável em variáveis protegidas. Storage não é WORM: acesso à chave/token/contas administrativas está fora da proteção contra adulteração apenas do banco. Evidências e limites em [DEPLOY](docs/DEPLOY.md) e [AUDIT](docs/AUDIT.md). Recursos pagos continuam não autorizados; não aplicar `deploy/render.paid.yaml`.
+Infraestrutura gratuita: Vercel Hobby, Render Free, Neon Free, Blob privado e função Neon com trigger configurado por minuto, **atualmente pausado**. A API pode demorar para reativar após ociosidade. O worker independente existe, mas o disparo agendado com a nova identidade não foi validado em produção. Checkpoints ficam fora do PostgreSQL; chave estável em variáveis protegidas. Storage não é WORM: acesso à chave/token/contas administrativas está fora da proteção contra adulteração apenas do banco. Evidências e limites em [DEPLOY](docs/DEPLOY.md) e [AUDIT](docs/AUDIT.md). Recursos pagos continuam não autorizados; não aplicar `deploy/render.paid.yaml`.
 
 **Estado de segurança e operação:** SQL/Blob e chave ativa substituídos, com consumidores verificados. As identidades expostas são recusadas para assinatura futura; permanecem públicas para verificação histórica delimitada. INTEGRO não garante origem legítima retroativa dos registros antigos, e Blob não é WORM. Evidências e limitações em [AUDIT_KEY_VERIFICATION](docs/AUDIT_KEY_VERIFICATION.md). Ambiente somente de demonstração, com valores simulados e finanças bloqueadas.
 
@@ -24,10 +26,10 @@ Node >=22.12, npm workspaces, TypeScript strict, React/Vite, Tailwind, React Rou
 
 ## Executar localmente
 
-Requer Node.js e Docker Desktop com engine Linux iniciado. Na raiz:
+Requer Node.js >=22.12 (recomendado 24) e Docker Desktop com engine Linux iniciado. Use clone/volume próprio e terminal sem variáveis da produção. Nunca copie credenciais Neon/Blob para a avaliação. A porta 54329 deve estar livre; não reutilize bancos de outros projetos. Na raiz:
 
 ```sh
-npm install
+npm ci
 ```
 
 Copie `.env.example` para `.env` (`Copy-Item .env.example .env` no PowerShell; `cp .env.example .env` no Linux/macOS). Depois:
@@ -81,6 +83,8 @@ Essas contas só têm acesso à aplicação; não dão acesso administrativo à 
 
 ## Verificação e build
 
+Use exclusivamente um PostgreSQL descartável com migrations, sem worker de demonstração executando. A amostra aponta TEST_DATABASE_URL para o mesmo banco local: rode os testes antes do seed/demonstração ou configure um banco de testes separado. Nunca use o banco de produção nem o clone de avaliação já populado.
+
 ```sh
 npm run typecheck
 npm run lint
@@ -88,15 +92,27 @@ npm test
 npm run build
 ```
 
-Testes Vitest/Fastify Inject acessam PostgreSQL real indicado em TEST_DATABASE_URL. Use banco local de teste com migrations; não executar a suíte no banco da demonstração. Cobrem autenticação/carteira, concorrência entre lances/lotes, reserva/liberação, janela, anti-sniping, idempotência, WebSocket, liquidação e adulteração de histórico, além de falhas/conflitos do Blob e manutenção. Resultados reais em DEV_STATUS: direcionados financeiros/Blob 29/29 na Sprint 4 e manutenção/fundação 11/11 na Sprint 5. O CI do último commit implantado passou. QA independente permanece com o responsável; não há suíte Playwright versionada.
+Testes Vitest/Fastify Inject acessam PostgreSQL real indicado em TEST_DATABASE_URL. `npm test` executa a API e a regressão SSR da sala; `npm run test:ui` executa somente os quatro casos de interface, sem banco/rede. Em 28/10: 91/91 API e 4/4 interface aprovados em ambiente isolado. Cobrem autenticação/carteira, concorrência entre lances/lotes, reserva/liberação, janela, anti-sniping, idempotência, WebSocket, liquidação e adulteração de histórico, além de falhas/conflitos do Blob e manutenção. SSR verifica renderização por estado, não substitui teste interativo de navegador. O CI da revisão final ainda precisa ser conferido após publicação autorizada; não há suíte Playwright versionada.
 
 Build web em `apps/web/dist`; API em `apps/api/dist/server.js`. Para API compilada: `npm start -w @elite/api`, com variáveis no ambiente. Após compilar, migrations e seed também funcionam sem tsx: `npm run db:migrate:production -w @elite/api` e `npm run db:seed:production -w @elite/api`. Build requer devDependencies; runtime compilado não precisa de tsx.
 
 ## Deploy e limitações
 
-Publicado nos serviços gratuitos descritos em DEPLOY. Render suspende por ociosidade, Neon e Blob têm franquias e podem suspender acesso ao excedê-las; não há promessa de operação gratuita contínua. CORS/WebSocket autorizam a origem canônica informada acima. A prova de suspensão física no horário do lote controlado foi inconclusiva por falta de telemetria; a liquidação pelo cron independente foi confirmada, sem repetir o lote.
+Publicado nos serviços gratuitos descritos em DEPLOY, **somente para consulta durante a manutenção**. Render suspende por ociosidade, Neon e Blob têm franquias e podem suspender acesso ao excedê-las; não há promessa de operação gratuita contínua. CORS/WebSocket autorizam a origem canônica informada acima. Há evidências históricas de liquidação independente anteriores à rotação; isso não valida o disparo atual com a chave nova. Consulte a investigação de versões e os limites em FINAL_CHALLENGE_REVIEW.
 
-Sessão expira em 24h; token Bearer em sessionStorage é acessível a scripts da própria origem. Não usa cookie de autenticação. Extrato mostra as últimas 50 movimentações. Retry de depósito preserva a chave apenas enquanto a tela permanece aberta. Carteira reserva o líder e libera o superado. Depois do prazo, a mesma liquidação transacional debita vencedor, credita vendedor e emite comprovante: localmente no startup/a cada 3s, em produção por cron Neon a cada minuto. Vitrine limitada a 100 lotes, histórico de lances sem paginação. CORS usa uma origem exata; WS deriva de VITE_API_URL.
+Sessão expira em 24h; token Bearer em sessionStorage é acessível a scripts da própria origem. Não usa cookie de autenticação. Extrato mostra as últimas 50 movimentações. Retry de depósito preserva a chave apenas enquanto a tela permanece aberta. Carteira reserva o líder e libera o superado. Depois do prazo, a mesma liquidação transacional debita vencedor, credita vendedor e emite comprovante: localmente no startup/a cada 3s; na produção a execução está suspensa junto ao cron. Vitrine limitada a 100 lotes, histórico de lances sem paginação. CORS usa uma origem exata; WS deriva de VITE_API_URL.
+
+## Roteiro de avaliação local
+
+Após migrations/seed/dev em ambiente próprio, abra duas sessões de navegador (perfis distintos ou janela privada). Use exclusivamente as contas de demonstração acima.
+
+1. Entre como leiloeiro, acesse o painel de lotes, pesquise um livro e selecione o item importado. Informe valores, incremento e datas; publique. A capa pode estar ausente quando o provedor não a oferece. Um lote próprio sem lances pode ser cancelado.
+2. Entre como Ana e Bruno em sessões separadas. Consulte a carteira, deposite valor simulado e abra a mesma sala. Dispute lances respeitando o mínimo; confira saldo comprometido/liberação do superado, mensagens de liderança e atualização sem recarregar.
+3. Para um ensaio curto, publique outro lote com prazo de poucos minutos. Um lance nos últimos 120s soma 120s ao encerramento: aguarde o cronômetro completo. Não altere datas pelo SQL. O worker local deve estar ativo (não definir RUN_SETTLEMENT_JOBS=false ou FINANCIAL_MAINTENANCE=true nesse ambiente isolado).
+4. Após o encerramento, confira Meus arremates, resultados do vendedor e transferência simulada. Abra o comprovante por link em janela sem login e consulte a auditoria pública. Baixe a evidência JSON.
+5. Para verificar a evidência **local**, obtenha o fingerprint exibido pela própria instância local e confira por canal confiável. Execute `node scripts/verify-audit.mjs evidencia.json FINGERPRINT_LOCAL`. Os pins de produção no exemplo abaixo não servem para uma nova instância local.
+
+O responsável relatou em 28/10 um ensaio local completo, incluindo quatro lances (100, 110, 120, 130), liquidação e verificação independente de seis eventos. Esse relato não é evidência de liberação financeira da produção. Não use estas instruções para retirar seus bloqueios.
 
 Concorrência: lock FOR UPDATE no lote e carteiras em ordem de UUID; relógio do PostgreSQL conferido depois dos locks. O mesmo saldo não pode financiar lances simultâneos acima do disponível. O líder não se supera; lance inicial/incremento/período são conferidos no backend. Lance nos últimos 120s soma 120s ao fim vigente. Liquidação usa settledAt, transação e unicidade de comprovante/movimentos para impedir repetição.
 

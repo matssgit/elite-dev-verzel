@@ -1,5 +1,7 @@
 # Prontidão final — Verzel Elite Dev
 
+**Atualização de 28/10:** consulte [FINAL_CHALLENGE_REVIEW.md](FINAL_CHALLENGE_REVIEW.md) para a nova matriz, 91 testes API + quatro SSR, correção da sala e relato humano do walkthrough local já concluído. O restante deste documento preserva a conferência de integridade de 27/10; não é uma nova leitura de produção. A demonstração pública financeira continua pendente.
+
 **Revisão: 27/10/2026, 17:42 Brasília. Prazo informado: 29/10/2026.**
 
 **Veredito: ainda não está pronto para entrega baseada somente na demonstração pública.** As operações essenciais estão bloqueadas pela manutenção. O código tem os fluxos implementados e uma alternativa local existente, mas essa alternativa precisa ser ensaiada e apresentada claramente ao avaliador. Não retirar a manutenção para resolver a experiência de avaliação.
