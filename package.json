@@ -13,7 +13,7 @@
     "dev": "concurrently -k -n api,web \"npm run dev -w @elite/api\" \"npm run dev -w @elite/web\"",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test -w @elite/api && npm run test:ui",
+    "test": "npm run test -w @elite/api && npm run test:ui && node --test scripts/tests/demo-isolation.test.mjs",
     "test:ui": "npm exec -w @elite/api -- vitest run --root ../.. apps/web/test",
     "lint": "eslint .",
     "db:migrate": "npm run db:migrate -w @elite/api",

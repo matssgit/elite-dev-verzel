@@ -10,7 +10,7 @@ services:
     branch: codex/elite-verzel-demo
     autoDeployTrigger: off
     buildCommand: npm ci --include=dev && node scripts/stamp-function-build.mjs && npm run build -w @elite/api
-    startCommand: npm run db:migrate:production -w @elite/api && npm run db:seed:production -w @elite/api && npm start -w @elite/api
+    startCommand: node scripts/demo-isolation-preflight.mjs && npm run db:migrate:production -w @elite/api && npm run db:seed:production -w @elite/api && npm start -w @elite/api
     healthCheckPath: /health
     envVars:
       - key: NODE_VERSION
