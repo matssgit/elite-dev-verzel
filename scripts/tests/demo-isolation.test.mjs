@@ -19,3 +19,6 @@ test('rejects partial activation and never exposes secret inputs in errors',()=>
   assert.throws(()=>assertDemoIsolation({...env,RUN_SETTLEMENT_JOBS:'true'}));
   assert.throws(()=>assertDemoIsolation({...env,AUDIT_PRIVATE_KEY:'SECRET-FIXTURE'}),error=>!error.message.includes('SECRET-FIXTURE'));
 });
+test('distinguishes Blob configuration failures with fixed public codes only',()=>{
+  for(const [patch,code] of [[{AUDIT_STORAGE:'file'},'BLOB_MODE'],[{AUDIT_BLOB_PREFIX:'other/'},'BLOB_PREFIX'],[{BLOB_READ_WRITE_TOKEN:'PRIVATE-FIXTURE'},'BLOB_TOKEN_STORE']])assert.throws(()=>assertDemoIsolation({...env,...patch}),error=>error.code===code&&!error.message.includes('PRIVATE-FIXTURE'));
+});

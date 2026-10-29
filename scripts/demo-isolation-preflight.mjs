@@ -10,9 +10,10 @@ export function assertDemoIsolation(env) {
   let url;try{url=new URL(env.DATABASE_URL??'');}catch{fail();}
   stage='DATABASE_TARGET_TLS';
   if(!['postgres:','postgresql:'].includes(url.protocol)||url.hostname!=='ep-aged-scene-b8uum2b8.c-14.us-east-1.aws.neon.tech'||!url.username||!url.password||!['require','verify-full'].includes(url.searchParams.get('sslmode')))fail();
-  stage='BLOB_STORE_PREFIX';
   const store=(env.BLOB_READ_WRITE_TOKEN??'').split('_')[3]?.toLowerCase();
-  if(env.AUDIT_STORAGE!=='blob'||env.AUDIT_BLOB_PREFIX!=='elite-verzel-demo-v1/'||store!=='uq7seocwcjwkg0zw')fail();
+  stage='BLOB_MODE';if(env.AUDIT_STORAGE!=='blob')fail();
+  stage='BLOB_PREFIX';if(env.AUDIT_BLOB_PREFIX!=='elite-verzel-demo-v1/')fail();
+  stage='BLOB_TOKEN_STORE';if(store!=='uq7seocwcjwkg0zw')fail();
   stage='RUNTIME_TRANSITION';
   if(env.NODE_ENV!=='production'||env.AUDIT_RECOVERY_MODE==='true'||env.AUDIT_TRANSITION_JSON||env.AUDIT_TRANSITION_SHA256)fail();
   const blocked=env.FINANCIAL_MAINTENANCE==='true'&&env.RUN_SETTLEMENT_JOBS==='false'&&env.ALLOW_DEMO_SEED==='false';
@@ -36,5 +37,5 @@ export function assertDemoIsolation(env) {
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)) {
   try{assertDemoIsolation(process.env);log('Demo isolation preflight OK.');}
-  catch(error){const codes=['DATABASE_URL','DATABASE_TARGET_TLS','BLOB_STORE_PREFIX','RUNTIME_TRANSITION','FINANCIAL_FLAGS','PRIVATE_KEY_FORMAT','SIGNING_PIN'];const code=codes.includes(error.code)?error.code:'UNKNOWN';process.stderr.write(`Demo isolation mismatch [${code}]; database/bootstrap not started. Secret values omitted.\n`);process.exitCode=1;}
+  catch(error){const codes=['DATABASE_URL','DATABASE_TARGET_TLS','BLOB_MODE','BLOB_PREFIX','BLOB_TOKEN_STORE','RUNTIME_TRANSITION','FINANCIAL_FLAGS','PRIVATE_KEY_FORMAT','SIGNING_PIN'];const code=codes.includes(error.code)?error.code:'UNKNOWN';process.stderr.write(`Demo isolation mismatch [${code}]; database/bootstrap not started. Secret values omitted.\n`);process.exitCode=1;}
 }
