@@ -13,7 +13,7 @@ export function assertDemoIsolation(env) {
   const token=env.BLOB_READ_WRITE_TOKEN??'',store=token.split('_')[3]?.toLowerCase();
   stage='BLOB_MODE';if(env.AUDIT_STORAGE!=='blob')fail();
   stage='BLOB_PREFIX';if(env.AUDIT_BLOB_PREFIX!=='elite-verzel-demo-v1/')fail();
-  stage='BLOB_TOKEN_STORE';if(store!=='uq7seocwcjwkg0zw')fail({tokenPresent:token.length>0,expectedTokenPrefix:token.startsWith('vercel_blob_rw_'),noOuterWhitespace:token===token.trim(),noWrappingQuotes:!/^['"]|['"]$/.test(token),sdkStoreSegmentLengthIs16:store?.length===16});
+  stage='BLOB_TOKEN_STORE';if(store!=='uq7seocwcjwkg0zw'||!token.startsWith('vercel_blob_rw_')||token!==token.trim()||/^['"]|['"]$/.test(token))fail({tokenPresent:token.length>0,expectedTokenPrefix:token.startsWith('vercel_blob_rw_'),noOuterWhitespace:token===token.trim(),noWrappingQuotes:!/^['"]|['"]$/.test(token),sdkStoreSegmentLengthIs16:store?.length===16});
   stage='RUNTIME_TRANSITION';
   if(env.NODE_ENV!=='production'||env.AUDIT_RECOVERY_MODE==='true'||env.AUDIT_TRANSITION_JSON||env.AUDIT_TRANSITION_SHA256)fail();
   const blocked=env.FINANCIAL_MAINTENANCE==='true'&&env.RUN_SETTLEMENT_JOBS==='false'&&env.ALLOW_DEMO_SEED==='false';

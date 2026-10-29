@@ -25,3 +25,6 @@ test('distinguishes Blob configuration failures with fixed public codes only',()
 test('reports token shape only as booleans without returning token fragments',()=>{
   assert.throws(()=>assertDemoIsolation({...env,BLOB_READ_WRITE_TOKEN:'"PRIVATE-FIXTURE"'}),error=>Object.values(error.details).every(v=>typeof v==='boolean')&&error.details.tokenPresent&&!error.details.noWrappingQuotes&&!JSON.stringify(error.details).includes('PRIVATE-FIXTURE'));
 });
+test('rejects quoted or assignment-wrapped values even when the store segment matches',()=>{
+  for(const token of ['"'+env.BLOB_READ_WRITE_TOKEN+'"','BLOB_READ_WRITE_TOKEN="'+env.BLOB_READ_WRITE_TOKEN+'"',' '+env.BLOB_READ_WRITE_TOKEN])assert.throws(()=>assertDemoIsolation({...env,BLOB_READ_WRITE_TOKEN:token}),error=>error.code==='BLOB_TOKEN_STORE');
+});
