@@ -22,3 +22,6 @@ test('rejects partial activation and never exposes secret inputs in errors',()=>
 test('distinguishes Blob configuration failures with fixed public codes only',()=>{
   for(const [patch,code] of [[{AUDIT_STORAGE:'file'},'BLOB_MODE'],[{AUDIT_BLOB_PREFIX:'other/'},'BLOB_PREFIX'],[{BLOB_READ_WRITE_TOKEN:'PRIVATE-FIXTURE'},'BLOB_TOKEN_STORE']])assert.throws(()=>assertDemoIsolation({...env,...patch}),error=>error.code===code&&!error.message.includes('PRIVATE-FIXTURE'));
 });
+test('reports token shape only as booleans without returning token fragments',()=>{
+  assert.throws(()=>assertDemoIsolation({...env,BLOB_READ_WRITE_TOKEN:'"PRIVATE-FIXTURE"'}),error=>Object.values(error.details).every(v=>typeof v==='boolean')&&error.details.tokenPresent&&!error.details.noWrappingQuotes&&!JSON.stringify(error.details).includes('PRIVATE-FIXTURE'));
+});
