@@ -3,8 +3,8 @@
 **Estado: PENDÊNCIAS BLOQUEANTES.** Preencher somente com resultados reais após a demonstração.
 
 - Repositório: https://github.com/matssgit/elite-dev-verzel (commit final ainda não publicado nesta etapa).
-- Demonstração funcional: **PENDENTE — não substituir pela produção em manutenção**.
-- API demonstrativa: PENDENTE.
+- Demonstração: https://elite-verzel-demo.vercel.app — frontend publicado, **fluxo funcional PENDENTE** por bloqueio do preflight Blob. Não enviar como demo completa antes da correção/validação.
+- API demonstrativa: https://elite-verzel-demo-api.onrender.com — criada, bootstrap bloqueado, sem health aprovado. Estado em DEMO_DEPLOY_STATE.md.
 - Contas exclusivas da demo: leiloeiro@demo.local (leiloeiro); ana@demo.local e bruno@demo.local (licitantes). Senha demonstrativa prevista: DemoVerzel2026!; confirmar criação antes do envio. Não são credenciais administrativas.
 - Instalação e roteiro local: README.md.
 - Walkthrough público: PENDENTE, tabela em DEMO_DEPLOY_PLAN.md.

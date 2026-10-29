@@ -1,5 +1,7 @@
 # Elite Dev Verzel
 
+**Demo isolada em implantação:** [frontend](https://elite-verzel-demo.vercel.app) publicado; API ainda bloqueada pelo preflight de identificação do token Blob. **Não é um fluxo público funcional concluído.** Estado, correção protegida e evidências em [DEMO_DEPLOY_STATE](docs/DEMO_DEPLOY_STATE.md). Produção original permanece intocada e em manutenção.
+
 **Revisão de 28/10/2026:** [auditoria final e matriz do edital](docs/FINAL_CHALLENGE_REVIEW.md). Suíte local isolada: 91 testes de API e 4 de interface aprovados. O fluxo local completo foi testado manualmente pelo responsável; a demonstração pública continua com operações financeiras bloqueadas. O requisito de demonstração pública interativa permanece pendente. Nenhuma reabertura está autorizada.
 
 **Entrega em 29/10/2026:** a produção permanece em manutenção e permite consulta; os fluxos financeiros não estão liberados. Para estado atual, pendências e avaliação completa em ambiente local isolado, leia [FINAL_DELIVERY_READINESS](docs/FINAL_DELIVERY_READINESS.md). Notas históricas abaixo não significam que o cron ou as operações públicas estejam ativos hoje.

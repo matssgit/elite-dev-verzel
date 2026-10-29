@@ -1,5 +1,7 @@
 # Implantação demo — 28/10/2026
 
+**Atualização28/10,22:46 Brasília: BLOQUEADA no preflight BLOB_TOKEN_STORE.** A configuração humana foi recebida, mas a API ainda não iniciou. Não houve habilitação financeira, seed ou teste financeiro remoto. Correção protegida do token Blob solicitada ao operador; não gerar outra identidade.
+
 Autorização explícita recebida para recursos gratuitos isolados, branch/commit/push seguro, deploy, finanças simuladas e testes da demo. **Nenhuma liberação da produção.**
 
 ## Recursos realmente criados
@@ -50,3 +52,23 @@ Helpers antigos de produção **não devem ser executados**. Os novos não receb
 - CI dos commits posteriores de helper/documentação e atualização final do README/submissão.
 
 **Não é uma demonstração funcional concluída.** Frontend publicado, backend pendente de configuração protegida; não declarar carteira/lances/WS/liquidação/persistência aprovados remotamente.
+
+## Conferência após handoff humano
+
+Operador informou DATABASE_URL/Blob configurados, identidade nova e revogação da API Key temporária. Fingerprint público local389b505e9330eaf660ace80f9d3f352375ccf9a03c2475621753810fbba496eb confere com var/demo-identity/public.json (somente arquivo público lido; DPAPI não aberto). Isso ainda não confirma a identidade em runtime, pois o preflight para antes dessa etapa.
+
+| Deploy demo | Commit | Evidência |
+|---|---|---|
+| dep-dbha2hu1egvs73evij10, informado pelo operador | cc93728 | update_failed; build/stamp passaram, boot “Demo isolation mismatch; database/bootstrap not started” |
+| dep-dbha8imc6qcc73er4o0g, diagnóstico seguro | 811fd60 | 01:42:11Z e01:42:20Z: BLOB_STORE_PREFIX |
+| dep-dbhaacm1egvs73f09ik0, diagnóstico granular | c2c56db | 01:46:17Z e01:46:26Z: **BLOB_TOKEN_STORE**, antes de migrations |
+
+As mudanças locais acrescentaram somente códigos fixos de falha, sem valores de segredos e sem alterar as regras de aceitação. Cinco testes Node do preflight e lint aprovados. npm audit --omit=dev: zero vulnerabilidades de runtime; avisos do build sobre dependências de desenvolvimento não foram tratados automaticamente.
+
+CI do código c2c56db: [40802314686](https://github.com/matssgit/elite-dev-verzel/actions/runs/40802314686), completed/success; workflow executa tipos/lint,91 testes API+4SSR+5preflight e build. Commits posteriores apenas documentais precisam ser distinguidos dessa evidência.
+
+Leitura do painel Blob confirmou store_UQ7SEOCwcjWKg0zw, privado, e base pública de metadados https://uq7seocwcjwkg0zw.private.blob.vercel-storage.com. O SDK instalado extrai a identidade de um token read-write pela quarta parte separada por underscore. O runtime não reconheceu essa identidade no valor configurado. Causa precisa do conteúdo incorreto (token de outro store, valor com rótulo/aspas, formato inesperado etc.) não foi comprovada, pois o segredo não foi lido. Não atribuir adulteração/exposição ao operador.
+
+**Passaram antes da recusa:** sintaxe/hostname direto/TLS/credenciais presentes na URL Neon, AUDIT_STORAGE=blob e prefixoelite-verzel-demo-v1/. Essa é validação de configuração, não conexão SQL concluída. **Ainda não passaram:** identidade de assinatura em runtime, conexão SQL/Blob, migrations/seed, health, login/WS/lances/liquidação/comprovantes/persistência. Não chamar esses itens de validados.
+
+**Ação única solicitada:** no Environment da API **nova** srv-dbh86ed9fdbs7387t2m0, substituir somente BLOB_READ_WRITE_TOKEN pelo valor read-write do store exclusivo correto, sem rótulo de variável, aspas, Bearer ou espaços extras. Salvar e redeploy apenas demo; manter FINANCIAL_MAINTENANCE=true, RUN_SETTLEMENT_JOBS=false, ALLOW_DEMO_SEED=false. Preservar a chave/pin já configurados. Não enviar token ou trechos na conversa. Depois conferir novo preflight/health antes de habilitar qualquer operação. Nenhum recurso de produção foi modificado nesta conferência.
