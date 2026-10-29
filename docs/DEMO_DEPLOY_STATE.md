@@ -1,5 +1,7 @@
 # Implantação demo — 28/10/2026
 
+**CONCLUÍDA:** demo funcional e persistência validada. Estado final em [DEMO_DELIVERY_RESULT.md](DEMO_DELIVERY_RESULT.md). O restante preserva a cronologia dos bloqueios e da correção protegida; não representa o estado operacional atual.
+
 **Atualização28/10,22:46 Brasília: BLOQUEADA no preflight BLOB_TOKEN_STORE.** A configuração humana foi recebida, mas a API ainda não iniciou. Não houve habilitação financeira, seed ou teste financeiro remoto. Correção protegida do token Blob solicitada ao operador; não gerar outra identidade.
 
 Autorização explícita recebida para recursos gratuitos isolados, branch/commit/push seguro, deploy, finanças simuladas e testes da demo. **Nenhuma liberação da produção.**

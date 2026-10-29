@@ -1,0 +1,142 @@
+{
+  "format": "elite-demo-delivery/v1",
+  "checkedAt": "2026-10-29T02:49:58.432Z",
+  "frontend": "https://elite-verzel-demo.vercel.app",
+  "api": "https://elite-verzel-demo-api.onrender.com",
+  "branch": "codex/elite-verzel-demo",
+  "runtimeCommit": "d3bce83e763cab991117cfa7eb2fbfe8473984dc",
+  "restartDeploy": "dep-dbhb6m6c6qcc73ettqo0",
+  "fingerprint": "389b505e9330eaf660ace80f9d3f352375ccf9a03c2475621753810fbba496eb",
+  "flags": {
+    "FINANCIAL_MAINTENANCE": false,
+    "RUN_SETTLEMENT_JOBS": true,
+    "ALLOW_DEMO_SEED": true
+  },
+  "productionUntouched": true,
+  "ids": {
+    "future": "7473cdaa-bba1-4446-a6b8-672ce9c5716d",
+    "cancelled": "35343cee-4ff2-4410-8dca-ad1268b07c96",
+    "long": "db18868b-df85-4fde-874a-ba2e79568b14",
+    "noBid": "abf14f8a-e48b-493b-a30c-c4509bdc0dd0",
+    "short": "7f216ecb-a459-4bec-8b59-e6f4978a6b25"
+  },
+  "receiptId": "96d9114b-2774-441b-9cc7-70f055852268",
+  "checks": [
+    "three-demo-logins",
+    "seed-open-with-signed-checkpoints",
+    "simulated-deposit-idempotent",
+    "catalog-search-real-snapshots",
+    "scheduled-and-cancelled-hidden",
+    "role-and-period-authorization",
+    "minimum-and-insufficient-funds-rejected",
+    "leader-reserved-and-anti-sniping-120s",
+    "self-outbid-and-increment-rejected",
+    "outbid-release-and-bid-idempotency",
+    "websocket-real-notification",
+    "new-key-signatures-checkpoints-privacy",
+    "worker-single-debit-seller-credit-and-release",
+    "public-receipt-valid",
+    "single-settlement-checkpoint-new-key",
+    "long-lived-evaluation-lot-open-with-bid",
+    "restart-persistence-no-duplicate-financial-or-checkpoint"
+  ],
+  "audits": [
+    {
+      "label": "seed",
+      "id": "00000000-0000-4000-8000-000000000100",
+      "status": "INTEGRO",
+      "events": 2,
+      "checkpoints": 2,
+      "headHash": "5aa05b8825a200c98511660f5a1e05161bdefcbb58bd417a637f5272c176124b"
+    },
+    {
+      "label": "future",
+      "id": "7473cdaa-bba1-4446-a6b8-672ce9c5716d",
+      "status": "INTEGRO",
+      "events": 1,
+      "checkpoints": 1,
+      "headHash": "06236b0afb04937786bb409f1ae489a2d0e40da83f160ef098eb137382d79fa7"
+    },
+    {
+      "label": "cancelled",
+      "id": "35343cee-4ff2-4410-8dca-ad1268b07c96",
+      "status": "INTEGRO",
+      "events": 2,
+      "checkpoints": 2,
+      "headHash": "6da8bd0335fed8280c18fbe83bc13f5d2ea664f2651e74d2c89941d21bc14c0a"
+    },
+    {
+      "label": "long",
+      "id": "db18868b-df85-4fde-874a-ba2e79568b14",
+      "status": "INTEGRO",
+      "events": 2,
+      "checkpoints": 2,
+      "headHash": "1bf5c777dffa1e30576aa4b4246f80caaba3019f00522d0d70b57635bc1059f2"
+    },
+    {
+      "label": "noBid",
+      "id": "abf14f8a-e48b-493b-a30c-c4509bdc0dd0",
+      "status": "INTEGRO",
+      "events": 2,
+      "checkpoints": 2,
+      "headHash": "6119307859933903b9345aa158488a1dd24018c105bed346f3d53ee68fab627e"
+    },
+    {
+      "label": "short",
+      "id": "7f216ecb-a459-4bec-8b59-e6f4978a6b25",
+      "status": "INTEGRO",
+      "events": 4,
+      "checkpoints": 4,
+      "headHash": "a4e6bcaa93c11d0237718fbc5661e6ddf18df2c990ee637387b1e110a5982cba"
+    }
+  ],
+  "wallets": [
+    {
+      "account": "ana@demo.local",
+      "totalCents": 500000,
+      "committedCents": 5000,
+      "expectedCommittedCents": 5000,
+      "ledgerEntries": 1,
+      "ledgerTotalCents": 500000,
+      "purchases": 0,
+      "sales": 0
+    },
+    {
+      "account": "bruno@demo.local",
+      "totalCents": 508900,
+      "committedCents": 10000,
+      "expectedCommittedCents": 10000,
+      "ledgerEntries": 3,
+      "ledgerTotalCents": 508900,
+      "purchases": 1,
+      "sales": 0
+    },
+    {
+      "account": "leiloeiro@demo.local",
+      "totalCents": 1100,
+      "committedCents": 0,
+      "expectedCommittedCents": 0,
+      "ledgerEntries": 1,
+      "ledgerTotalCents": 1100,
+      "purchases": 0,
+      "sales": 1
+    }
+  ],
+  "persistence": {
+    "apiExactComparison": true,
+    "sqlExactComparison": true
+  },
+  "catalogSearchCached": false,
+  "harnessCorrections": [
+    {
+      "phase": "setup",
+      "message": "POST /auctions/35343cee-4ff2-4410-8dca-ad1268b07c96/cancel HTTP 400 REQUEST_ERROR\n\n400 !== 200\n",
+      "at": "2026-10-29T02:37:15.119Z"
+    },
+    {
+      "phase": "resume",
+      "message": "POST /auctions/7473cdaa-bba1-4446-a6b8-672ce9c5716d/bids HTTP 409 AUCTION_NOT_STARTED\n\n409 !== 422\n",
+      "at": "2026-10-29T02:38:44.154Z"
+    }
+  ]
+}

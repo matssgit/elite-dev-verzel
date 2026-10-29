@@ -1,5 +1,7 @@
 # Prontidão final — Verzel Elite Dev
 
+**Estado posterior:** a demo isolada está funcional; consultar [DEMO_DELIVERY_RESULT.md](DEMO_DELIVERY_RESULT.md) para URLs, walkthrough e prova de persistência. A produção original permanece sob manutenção. Este documento preserva o histórico anterior à demo.
+
 **Atualização de 28/10:** consulte [FINAL_CHALLENGE_REVIEW.md](FINAL_CHALLENGE_REVIEW.md) para a nova matriz, 91 testes API + quatro SSR, correção da sala e relato humano do walkthrough local já concluído. O restante deste documento preserva a conferência de integridade de 27/10; não é uma nova leitura de produção. A demonstração pública financeira continua pendente.
 
 **Revisão: 27/10/2026, 17:42 Brasília. Prazo informado: 29/10/2026.**

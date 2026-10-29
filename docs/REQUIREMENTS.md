@@ -1,5 +1,7 @@
 # Matriz de requisitos
 
+**Entrega demonstrativa concluída:** frontend/API isolados publicados, lances/WS/liquidação/comprovante/auditoria e persistência após redeploy validados em [DEMO_DELIVERY_RESULT.md](DEMO_DELIVERY_RESULT.md). A manutenção da produção original não foi retirada. Registros anteriores abaixo são históricos.
+
 **28/10/2026:** matriz individual atualizada conforme o enunciado fornecido em [FINAL_CHALLENGE_REVIEW.md](FINAL_CHALLENGE_REVIEW.md). 91 testes API e quatro SSR aprovados em PostgreSQL descartável separado. Produção em manutenção: demonstração pública interativa pendente. Notas cronológicas abaixo preservam evidências anteriores.
 
 27/10 às 15:27: diagnóstico exclusivamente neutro reproduziu respostas de gerações diferentes da função; autenticação correta funciona na geração identificada. Causa interna de roteamento/propagação ainda não comprovada; teste de conexão anônimo inconclusivo. Nenhum teste financeiro novo. Manutenção/bloqueios ativos, cron disabled, 15 checkpoints/snapshot e quatro comprovantes preservados. Estado do agendamento financeiro não ampliado. Evidências em POST_403_DIAGNOSTIC.md.
@@ -41,7 +43,7 @@ Estados: **Pendente**, **Em desenvolvimento**, **Implementado**, **Validado**. V
 | R19 | React no frontend; Node.js ou Python no backend; banco aceito e instruções de configuração | 5 | Validado | Build React/Node.js e execução em PostgreSQL; instruções no README; DEV_STATUS |
 | R20 | Seed: um leiloeiro, dois clientes, lote publicado com lances abertos | 5 | Validado | Seed com três contas, saldo e lote real de Dom Casmurro com lance; execução local confirmada |
 | R21 | README detalhado, execução e comportamentos inesperados/limitações | 5 | Implementado | README com estado atual |
-| R22 | Aplicação publicada e acessível por link público | 2,7 | Parcial | Frontend e health HTTP 200 em 28/10; operações financeiras bloqueadas. Não permite fluxo público completo |
+| R22 | Aplicação publicada e acessível por link público | 2,7 | Validado na demo | https://elite-verzel-demo.vercel.app ; fluxo financeiro simulado/WS/auditoria e reinício conferidos; limites gratuitos documentados. Produção original bloqueada |
 | R23 | Repositório público no GitHub (ambos os links se separados) | 7 | Validado | https://github.com/matssgit/elite-dev-verzel HTTP 200 em 28/10; alterações locais finais ainda precisam de publicação autorizada |
 | R24 | Envio no formulário com nome completo, e-mail, repositório, deploy e explicação do uso de IA | 7 | Pendente | Envio coordenado pelo humano |
 

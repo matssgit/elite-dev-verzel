@@ -1,27 +1,40 @@
-# Rascunho da submissão — não enviado
+# Submissão Verzel — pronta para preenchimento humano
 
-**Estado: PENDÊNCIAS BLOQUEANTES.** Preencher somente com resultados reais após a demonstração.
+**Estado técnico: PRONTO PARA SUBMISSÃO. Formulário ainda não enviado.** Prazo: 29/10/2026; confirmar horário no convite.
 
-- Repositório: https://github.com/matssgit/elite-dev-verzel (commit final ainda não publicado nesta etapa).
-- Demonstração: https://elite-verzel-demo.vercel.app — frontend publicado, **fluxo funcional PENDENTE** por bloqueio do preflight Blob. Não enviar como demo completa antes da correção/validação.
-- API demonstrativa: https://elite-verzel-demo-api.onrender.com — criada, bootstrap bloqueado, sem health aprovado. Estado em DEMO_DEPLOY_STATE.md.
-- Contas exclusivas da demo: leiloeiro@demo.local (leiloeiro); ana@demo.local e bruno@demo.local (licitantes). Senha demonstrativa prevista: DemoVerzel2026!; confirmar criação antes do envio. Não são credenciais administrativas.
-- Instalação e roteiro local: README.md.
-- Walkthrough público: PENDENTE, tabela em DEMO_DEPLOY_PLAN.md.
-- Testes locais anteriores:91 API+4 SSR aprovados; TypeScript/lint/build aprovados. Atualizar com o resultado final real, não apresentar como testes da demo remota.
-- Limitações: Render Free suspende; worker retoma vencidos ao acordar; auditoria depende da guarda independente de chave/checkpoints e não é WORM. Produção original segue financeiramente bloqueada e seu cron pausado; incidente Neon não foi declarado resolvido.
+| Campo | Conteúdo |
+|---|---|
+| Nome completo / e-mail | Preencher com seus dados reais diretamente no formulário |
+| Repositório/branch avaliada | https://github.com/matssgit/elite-dev-verzel/tree/codex/elite-verzel-demo |
+| Demonstração funcional | https://elite-verzel-demo.vercel.app |
+| API | https://elite-verzel-demo-api.onrender.com/health |
+| Relatório | docs/DEMO_DELIVERY_RESULT.md na branch entregue |
 
-## Uso de IA — texto a revisar pelo responsável
+Se o campo de repositório só aceitar a raiz https://github.com/matssgit/elite-dev-verzel, acrescente explicitamente **avaliar branch codex/elite-verzel-demo** nas observações/explicação. main não foi mesclada nesta missão.
 
-Usei o Codex como apoio à implementação, documentação, análise de regras, revisão de código e execução de testes automatizados. As evidências técnicas e limitações estão registradas nos relatórios do repositório. Realizei testes manuais locais de login, responsividade, carteiras/lances, WebSocket, encerramento/liquidação, resultados, comprovante e auditoria; executei também a verificação independente da evidência local com seis eventos. A participação humana descrita aqui corresponde ao relato fornecido ao assistente. Antes do envio, vou revisar o texto e descrever somente as decisões que efetivamente compreendi/revisei e os testes que pessoalmente realizei. A validação pública demonstrativa ainda precisa ser concluída.
+Contas de teste, senha exclusivamente demonstrativa: DemoVerzel2026!
 
-Não afirmar que todo código foi revisado linha a linha, nem atribuir testes automáticos executados pelo agente ao desenvolvedor. Inserir nome/e-mail reais diretamente no formulário; não necessários neste arquivo.
+- leiloeiro@demo.local — leiloeiro.
+- ana@demo.local e bruno@demo.local — licitantes.
 
-## Checklist antes de enviar até29/10/2026
+Lote aberto com lance até 30/10, 23:59 Brasília: /lotes/db18868b-df85-4fde-874a-ba2e79568b14. Comprovante: /comprovantes/96d9114b-2774-441b-9cc7-70f055852268. Caminhos relativos à demonstração acima.
 
-- [ ] Demo nova funcional, isolada, URLs e contas verificadas.
-- [ ] Cenários de DEMO_DEPLOY_PLAN preenchidos com evidências reais.
-- [ ] Código final publicado, commit remoto/CI conferidos, sem segredos.
-- [ ] README com links corretos e limites separados por ambiente.
-- [ ] Nome/e-mail, horário e canal de submissão confirmados pelo responsável.
-- [ ] Texto de IA revisado pelo humano e formulário enviado.
+## Funcionalidades verificadas
+
+Login/perfis, catálogo real/snapshots, criação/cancelamento, carteira/depósito idempotente, lances/rejeições/liberação de reserva, WebSocket, anti-sniping +120s, encerramento e liquidação de R$ 11, comprovante/auditoria públicos. SQL conciliou saldo/ledger/reservas; reinício preservou valores, comprovante e checkpoints sem duplicação. Seis históricos e 13 checkpoints íntegros. Fluxos remotos não foram executados no ambiente original.
+
+Suíte atual: 91 API + 6 SSR + 7 preflight; TypeScript/lint/build/stamp aprovados. Conferir o CI do SHA final publicado; detalhes em DEMO_DELIVERY_RESULT.md. Não apresentar testes isolados como adulteração executada no banco público.
+
+## Texto de IA — revisar antes de copiar
+
+Utilizei Codex como apoio à implementação, análise das regras, documentação, revisão e execução de testes automatizados. Também utilizei o agente para o walkthrough HTTP/WS e a validação da demonstração pública. Realizei pessoalmente testes manuais locais de login, responsividade, carteira/lances, WebSocket, liquidação, comprovante e auditoria, incluindo verificação independente da evidência local. Configurei os serviços e segredos protegidos e gerei a identidade exclusiva da demonstração. As evidências e limitações estão documentadas no repositório.
+
+Essas atividades humanas constam do relato fornecido pelo responsável. **Complemente somente com as decisões que realmente revisou e sabe explicar**; não afirmar revisão humana de todas as linhas nem atribuir ao desenvolvedor os comandos executados pelo agente.
+
+## Limitações a informar
+
+Render Free suspende por inatividade: o worker retoma vencidos ao acordar, com possível atraso. Franquias gratuitas não garantem disponibilidade contínua. Auditoria depende da guarda independente de chave/storage e não é WORM. A produção original permanece em manutenção, sem cron reativado; o incidente antigo Neon não foi declarado resolvido. A demo usa serviços/identidade independentes e valores simulados.
+
+## Envio
+
+Formulário indicado no edital/documentação: https://elitedev.verzel.com.br/?elite-dev-2026-2 . Confirmar endereço/horário no convite, preencher seus dados, colar os links e o texto revisado, conferir e enviar. Guardar comprovante do envio. Nenhum formulário foi submetido automaticamente.

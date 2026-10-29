@@ -1,5 +1,7 @@
 # Auditoria final do desafio — Elite Dev Verzel
 
+**Atualização posterior:** demonstração isolada publicada, fluxo validado e persistência após reinício confirmada em [DEMO_DELIVERY_RESULT.md](DEMO_DELIVERY_RESULT.md). O veredito/percentual abaixo pertencem à revisão anterior à implantação; não foram recalculados por nova auditoria nesta missão.
+
 **Data:** 28/10/2026, Brasília. **Prazo informado:** 29/10/2026; horário e submissão precisam de confirmação humana.
 
 ## Resumo executivo

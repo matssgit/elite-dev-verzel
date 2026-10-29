@@ -1,0 +1,160 @@
+{
+  "auctionId": "7f216ecb-a459-4bec-8b59-e6f4978a6b25",
+  "records": [
+    {
+      "auctionId": "7f216ecb-a459-4bec-8b59-e6f4978a6b25",
+      "sequence": 0,
+      "previousHash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "payload": {
+        "type": "OPEN",
+        "endsAt": "2026-10-29T02:40:43.896Z",
+        "itemHash": "d39b420777e6dec6c9f231c2980484d20a94b32f96f31d348a5fab128ebc7c83",
+        "startsAt": "2026-10-29T02:39:33.896Z",
+        "ownerIdHash": "e189c7c2a4f5be29d46ef5b829f63677bdb729916234a71ed57c2c387829faaf",
+        "initialCents": 1000,
+        "incrementCents": 100,
+        "legacyBaseline": false
+      },
+      "hash": "983610347be159e6b0429b03a36159b751cfe106ce9b9cc5dc9038232607caf7",
+      "signature": "d5S40VBNSHMTgQCT5h94Ik+hc8jh3QDKiofXjeq+X5zO2W5SeZRZAT5QiZtBEk9oFP5c5mm9cKpVknRD3Ai4AQ=="
+    },
+    {
+      "auctionId": "7f216ecb-a459-4bec-8b59-e6f4978a6b25",
+      "sequence": 1,
+      "previousHash": "983610347be159e6b0429b03a36159b751cfe106ce9b9cc5dc9038232607caf7",
+      "payload": {
+        "type": "BID",
+        "bidId": "fff067a6-e2e2-4b79-a05d-c6de29adf92f",
+        "endsAt": "2026-10-29T02:42:43.896Z",
+        "createdAt": "2026-10-29T02:40:04.229Z",
+        "amountCents": 1000,
+        "bidSequence": 1,
+        "bidderPublicId": "499bc69a-e8f8-45ff-ad68-c35b93d41f46"
+      },
+      "hash": "0e0ce3ab6cf1016eca4a489463280729dabdef601eca8fb7a6c5bbb86880acb3",
+      "signature": "O66CdGnE1dV6koDhuiTY55n2yjjXJVzNlMFUfRC3Tuqjv3Cw2R43rFcz80nwad2v2DwK1qy/k+LKCwohMv51Dg=="
+    },
+    {
+      "auctionId": "7f216ecb-a459-4bec-8b59-e6f4978a6b25",
+      "sequence": 2,
+      "previousHash": "0e0ce3ab6cf1016eca4a489463280729dabdef601eca8fb7a6c5bbb86880acb3",
+      "payload": {
+        "type": "BID",
+        "bidId": "7371dc55-630b-4309-b925-f152b677503c",
+        "endsAt": "2026-10-29T02:42:43.896Z",
+        "createdAt": "2026-10-29T02:40:05.252Z",
+        "amountCents": 1100,
+        "bidSequence": 2,
+        "bidderPublicId": "10446c87-09e7-4492-8cef-203dfd51c465"
+      },
+      "hash": "01cc8d5cd330df516d2ab8d114295bb7bf365e4d857439f15af19fa65cac9dc7",
+      "signature": "n534Gj8fbpgqG+zOL8/F4E5a0cVI6GIto6fDgCbP6j9VctYQxRtCTfDlSFvnBHiwFylV5igQa1K4x4W7aSEFDw=="
+    },
+    {
+      "auctionId": "7f216ecb-a459-4bec-8b59-e6f4978a6b25",
+      "sequence": 3,
+      "previousHash": "01cc8d5cd330df516d2ab8d114295bb7bf365e4d857439f15af19fa65cac9dc7",
+      "payload": {
+        "type": "SETTLE",
+        "endedAt": "2026-10-29T02:42:43.896Z",
+        "itemHash": "d39b420777e6dec6c9f231c2980484d20a94b32f96f31d348a5fab128ebc7c83",
+        "receiptId": "96d9114b-2774-441b-9cc7-70f055852268",
+        "settledAt": "2026-10-29T02:42:44.438Z",
+        "amountCents": 1100,
+        "winnerPublicId": "10446c87-09e7-4492-8cef-203dfd51c465"
+      },
+      "hash": "a4e6bcaa93c11d0237718fbc5661e6ddf18df2c990ee637387b1e110a5982cba",
+      "signature": "dpctyX4kxPVd8Qmg/xFW2jKIHHpBuqHmQPozEF7wO1ACtxhfxJnZePyneQqpH8aKiRgz0H+ivzhHGBsvuKGkCQ=="
+    }
+  ],
+  "checkpoints": [
+    {
+      "auctionId": "7f216ecb-a459-4bec-8b59-e6f4978a6b25",
+      "hash": "983610347be159e6b0429b03a36159b751cfe106ce9b9cc5dc9038232607caf7",
+      "payload": {
+        "endsAt": "2026-10-29T02:40:43.896Z",
+        "incrementCents": 100,
+        "initialCents": 1000,
+        "itemHash": "d39b420777e6dec6c9f231c2980484d20a94b32f96f31d348a5fab128ebc7c83",
+        "legacyBaseline": false,
+        "ownerIdHash": "e189c7c2a4f5be29d46ef5b829f63677bdb729916234a71ed57c2c387829faaf",
+        "startsAt": "2026-10-29T02:39:33.896Z",
+        "type": "OPEN"
+      },
+      "previousHash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "sequence": 0,
+      "signature": "d5S40VBNSHMTgQCT5h94Ik+hc8jh3QDKiofXjeq+X5zO2W5SeZRZAT5QiZtBEk9oFP5c5mm9cKpVknRD3Ai4AQ=="
+    },
+    {
+      "auctionId": "7f216ecb-a459-4bec-8b59-e6f4978a6b25",
+      "hash": "0e0ce3ab6cf1016eca4a489463280729dabdef601eca8fb7a6c5bbb86880acb3",
+      "payload": {
+        "amountCents": 1000,
+        "bidId": "fff067a6-e2e2-4b79-a05d-c6de29adf92f",
+        "bidSequence": 1,
+        "bidderPublicId": "499bc69a-e8f8-45ff-ad68-c35b93d41f46",
+        "createdAt": "2026-10-29T02:40:04.229Z",
+        "endsAt": "2026-10-29T02:42:43.896Z",
+        "type": "BID"
+      },
+      "previousHash": "983610347be159e6b0429b03a36159b751cfe106ce9b9cc5dc9038232607caf7",
+      "sequence": 1,
+      "signature": "O66CdGnE1dV6koDhuiTY55n2yjjXJVzNlMFUfRC3Tuqjv3Cw2R43rFcz80nwad2v2DwK1qy/k+LKCwohMv51Dg=="
+    },
+    {
+      "auctionId": "7f216ecb-a459-4bec-8b59-e6f4978a6b25",
+      "hash": "01cc8d5cd330df516d2ab8d114295bb7bf365e4d857439f15af19fa65cac9dc7",
+      "payload": {
+        "amountCents": 1100,
+        "bidId": "7371dc55-630b-4309-b925-f152b677503c",
+        "bidSequence": 2,
+        "bidderPublicId": "10446c87-09e7-4492-8cef-203dfd51c465",
+        "createdAt": "2026-10-29T02:40:05.252Z",
+        "endsAt": "2026-10-29T02:42:43.896Z",
+        "type": "BID"
+      },
+      "previousHash": "0e0ce3ab6cf1016eca4a489463280729dabdef601eca8fb7a6c5bbb86880acb3",
+      "sequence": 2,
+      "signature": "n534Gj8fbpgqG+zOL8/F4E5a0cVI6GIto6fDgCbP6j9VctYQxRtCTfDlSFvnBHiwFylV5igQa1K4x4W7aSEFDw=="
+    },
+    {
+      "auctionId": "7f216ecb-a459-4bec-8b59-e6f4978a6b25",
+      "hash": "a4e6bcaa93c11d0237718fbc5661e6ddf18df2c990ee637387b1e110a5982cba",
+      "payload": {
+        "amountCents": 1100,
+        "endedAt": "2026-10-29T02:42:43.896Z",
+        "itemHash": "d39b420777e6dec6c9f231c2980484d20a94b32f96f31d348a5fab128ebc7c83",
+        "receiptId": "96d9114b-2774-441b-9cc7-70f055852268",
+        "settledAt": "2026-10-29T02:42:44.438Z",
+        "type": "SETTLE",
+        "winnerPublicId": "10446c87-09e7-4492-8cef-203dfd51c465"
+      },
+      "previousHash": "01cc8d5cd330df516d2ab8d114295bb7bf365e4d857439f15af19fa65cac9dc7",
+      "sequence": 3,
+      "signature": "dpctyX4kxPVd8Qmg/xFW2jKIHHpBuqHmQPozEF7wO1ACtxhfxJnZePyneQqpH8aKiRgz0H+ivzhHGBsvuKGkCQ=="
+    }
+  ],
+  "issues": [],
+  "legacyBaseline": false,
+  "status": "INTEGRO",
+  "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA1El/ZV5keOEBl/DRJNvAGCM/5EP6J4Fevns+4yEFco8=\n-----END PUBLIC KEY-----\n",
+  "fingerprint": "389b505e9330eaf660ace80f9d3f352375ccf9a03c2475621753810fbba496eb",
+  "signatureKeys": [
+    {
+      "sequence": 0,
+      "fingerprint": "389b505e9330eaf660ace80f9d3f352375ccf9a03c2475621753810fbba496eb"
+    },
+    {
+      "sequence": 1,
+      "fingerprint": "389b505e9330eaf660ace80f9d3f352375ccf9a03c2475621753810fbba496eb"
+    },
+    {
+      "sequence": 2,
+      "fingerprint": "389b505e9330eaf660ace80f9d3f352375ccf9a03c2475621753810fbba496eb"
+    },
+    {
+      "sequence": 3,
+      "fingerprint": "389b505e9330eaf660ace80f9d3f352375ccf9a03c2475621753810fbba496eb"
+    }
+  ]
+}

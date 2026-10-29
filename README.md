@@ -1,8 +1,8 @@
 # Elite Dev Verzel
 
-**Demo isolada em implantação:** [frontend](https://elite-verzel-demo.vercel.app) publicado; API ainda bloqueada pelo preflight de identificação do token Blob. **Não é um fluxo público funcional concluído.** Estado, correção protegida e evidências em [DEMO_DEPLOY_STATE](docs/DEMO_DEPLOY_STATE.md). Produção original permanece intocada e em manutenção.
+**Demonstração funcional para avaliação:** [Elite Leilões](https://elite-verzel-demo.vercel.app) · [API](https://elite-verzel-demo-api.onrender.com/health) · [lote aberto até30/10,23:59 Brasília](https://elite-verzel-demo.vercel.app/lotes/db18868b-df85-4fde-874a-ba2e79568b14) · [comprovante público](https://elite-verzel-demo.vercel.app/comprovantes/96d9114b-2774-441b-9cc7-70f055852268). Valores exclusivamente simulados. Fluxo financeiro, WebSocket, liquidação, auditoria e persistência após redeploy verificados; [relatório e evidências](docs/DEMO_DELIVERY_RESULT.md).
 
-**Revisão de 28/10/2026:** [auditoria final e matriz do edital](docs/FINAL_CHALLENGE_REVIEW.md). Suíte local isolada: 91 testes de API e 4 de interface aprovados. O fluxo local completo foi testado manualmente pelo responsável; a demonstração pública continua com operações financeiras bloqueadas. O requisito de demonstração pública interativa permanece pendente. Nenhuma reabertura está autorizada.
+**Código desta entrega:** branch `codex/elite-verzel-demo`. A [revisão anterior](docs/FINAL_CHALLENGE_REVIEW.md) retrata o estado antes da publicação da demo. A **produção original** continua intacta e financeiramente bloqueada; somente a infraestrutura demonstrativa independente foi liberada com autorização.
 
 **Entrega em 29/10/2026:** a produção permanece em manutenção e permite consulta; os fluxos financeiros não estão liberados. Para estado atual, pendências e avaliação completa em ambiente local isolado, leia [FINAL_DELIVERY_READINESS](docs/FINAL_DELIVERY_READINESS.md). Notas históricas abaixo não significam que o cron ou as operações públicas estejam ativos hoje.
 
@@ -16,7 +16,7 @@
 
 Casa de leilões online do desafio técnico Verzel. **Etapa atual: Sprint 5 — segurança e preparação de entrega.** Fluxo de leilões com catálogo/snapshots, lances concorrentes, carteira, anti-sniping, WebSocket, encerramento/liquidação automática, resultados, comprovantes compartilháveis e auditoria pública assinada implementados.
 
-**Aplicação:** https://elite-dev-verzel-zmats-projects.vercel.app · **API:** https://elite-dev-verzel-api.onrender.com/health · **Código:** https://github.com/matssgit/elite-dev-verzel . Contas de demonstração abaixo usam valores simulados, sem pagamentos reais.
+**Ambiente original, somente consulta:** https://elite-dev-verzel-zmats-projects.vercel.app · **API original:** https://elite-dev-verzel-api.onrender.com/health . Para testar operações, use **elite-verzel-demo.vercel.app**, indicado no início deste README. Código: https://github.com/matssgit/elite-dev-verzel/tree/codex/elite-verzel-demo .
 
 Infraestrutura gratuita: Vercel Hobby, Render Free, Neon Free, Blob privado e função Neon com trigger configurado por minuto, **atualmente pausado**. A API pode demorar para reativar após ociosidade. O worker independente existe, mas o disparo agendado com a nova identidade não foi validado em produção. Checkpoints ficam fora do PostgreSQL; chave estável em variáveis protegidas. Storage não é WORM: acesso à chave/token/contas administrativas está fora da proteção contra adulteração apenas do banco. Evidências e limites em [DEPLOY](docs/DEPLOY.md) e [AUDIT](docs/AUDIT.md). Recursos pagos continuam não autorizados; não aplicar `deploy/render.paid.yaml`.
 
@@ -62,8 +62,8 @@ Aguarde o banco ficar saudável se a migration for executada logo após baixar a
 | BLOB_READ_WRITE_TOKEN | Segredo protegido do store privado; somente API/função |
 | AUDIT_PRIVATE_KEY | Chave Ed25519 PKCS8 em segredo de runtime; nunca VITE_* |
 | AUDIT_PUBLIC_KEY_FINGERPRINT | Identidade pública confiável fixada para assinatura |
-| RUN_SETTLEMENT_JOBS | false na API publicada; localmente o worker permanece ativo |
-| FINANCIAL_MAINTENANCE | true bloqueia escritas financeiras e jobs; exige janela coordenada |
+| RUN_SETTLEMENT_JOBS | true na demo isolada/local; false na produção original |
+| FINANCIAL_MAINTENANCE | false na demo autorizada; true na produção original bloqueia escritas financeiras e jobs |
 
 Não versionar `.env` ou credenciais. Valores da amostra são exclusivamente de desenvolvimento local. Banco de produção deve usar credenciais próprias.
 
@@ -100,7 +100,7 @@ Build web em `apps/web/dist`; API em `apps/api/dist/server.js`. Para API compila
 
 ## Deploy e limitações
 
-Publicado nos serviços gratuitos descritos em DEPLOY, **somente para consulta durante a manutenção**. Render suspende por ociosidade, Neon e Blob têm franquias e podem suspender acesso ao excedê-las; não há promessa de operação gratuita contínua. CORS/WebSocket autorizam a origem canônica informada acima. Há evidências históricas de liquidação independente anteriores à rotação; isso não valida o disparo atual com a chave nova. Consulte a investigação de versões e os limites em FINAL_CHALLENGE_REVIEW.
+**Demo isolada:** operações simuladas e worker da API ativos; liquidação/redeploy comprovados em DEMO_DELIVERY_RESULT. **Ambiente original:** somente consulta durante a manutenção; seu cron não foi reativado. Render suspende por ociosidade, Neon e Blob têm franquias e podem suspender acesso ao excedê-las; não há promessa de operação gratuita contínua. CORS/WebSocket autorizam a origem canônica de cada ambiente. A demo não depende das Neon Functions do incidente antigo.
 
 Sessão expira em 24h; token Bearer em sessionStorage é acessível a scripts da própria origem. Não usa cookie de autenticação. Extrato mostra as últimas 50 movimentações. Retry de depósito preserva a chave apenas enquanto a tela permanece aberta. Carteira reserva o líder e libera o superado. Depois do prazo, a mesma liquidação transacional debita vencedor, credita vendedor e emite comprovante: localmente no startup/a cada 3s; na produção a execução está suspensa junto ao cron. Vitrine limitada a 100 lotes, histórico de lances sem paginação. CORS usa uma origem exata; WS deriva de VITE_API_URL.
 
@@ -132,6 +132,14 @@ A aplicação assina eventos Ed25519 e publica checkpoints independentes do Post
 Desenvolvimento: var/audit contém chave e checkpoints locais, ignorados no Git. Produção: AUDIT_STORAGE=blob, store privado, chave/token protegidos e pin público; sem arquivos de auditoria no disco efêmero da Render. Preservar checkpoints e identidade; não trocar chave/prefixo sem o procedimento de transição. AUDIT_PUBLIC_KEY.pem identifica apenas o ambiente local; AUDIT_PRODUCTION_PUBLIC_KEY.pem identifica a chave anterior de produção, sob suspeita de exposição. Nenhuma chave privada é publicada.
 
 Para verificar uma evidência JSON baixada sem modificar datas/campos:
+
+**Demo isolada atual:**
+
+```sh
+node scripts/verify-audit.mjs docs/DEMO_AUDIT_EVIDENCE.json 389b505e9330eaf660ace80f9d3f352375ccf9a03c2475621753810fbba496eb
+```
+
+Quatro eventos do arremate conferidos, inclusive após redeploy. Para evidências **antigas da produção original**, utilize o pin/manifesto correspondente abaixo; ele não serve para a demo nova:
 
 ```sh
 node scripts/verify-audit.mjs evidencia.json dc3370282c6119b2a77433fc95c0c84fa6868b23f77e8d6ffd7027d872f3ece3 126e42c16b21a5b7e3256c507e96eead53bb0a956e94f741928b04505c0e25a1
